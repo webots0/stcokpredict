@@ -38,16 +38,6 @@ AT=torch.Tensor(np.random.randint(2,size=(node,node)))
 for i in range(5):
     AT[i][i]=1
 
-# 计算度矩阵
-def degAT(AT):
-    #print(AT)
-    D=torch.sum(AT,dim=0)
-    D=torch.pow(D,-0.5)
-    #print(D)
-    D12=torch.diag(D)
-    #print(D12)   
-    return D12
-
 # 12条边，每条边4个特征
 ET=torch.Tensor(np.random.rand(12,4))
 
@@ -57,7 +47,19 @@ YT=torch.Tensor(np.random.rand(6,1))
 # 预测最后3个数据点
 yt=torch.Tensor(np.random.rand(1,3))
 
-# 12*4 
+
+
+# 计算度矩阵
+
+def degAT(AT):
+    #print(AT)
+    D=torch.sum(AT,dim=0)
+    D=torch.pow(D,-0.5)
+    #print(D)
+    D12=torch.diag(D)
+    #print(D12)   
+    return D12
+
 
 def gcn(AT,XT,ET,W1,W2,b1):
     D12=degAT(AT)
@@ -198,3 +200,7 @@ for epoch in range(10):
     optimizer.step()
 
 #%%
+da=[]
+for i in md.parameters():
+    da.append(i)
+    
