@@ -131,18 +131,7 @@ def mutH1H2(H1,H2,W5,W6):
 
 
 
-#%%
 
-class Quadratic(nn.Module):
-    def init(self, a, b, c):
-        super(Quadratic, self).init()
-        self.a = nn.Parameter(torch.tensor(a))
-        self.b = nn.Parameter(torch.tensor(b))
-        self.c = nn.Parameter(torch.tensor(c))
-    
-    def forward(self, x):
-        
-        return self.a * x**2 + self.b * x + self.c
 #%%
 outSize1=7
 outSize2=12
@@ -206,14 +195,14 @@ optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
  
 yt=yt.view(-1)
     
-for epoch in range(100):
+for epoch in range(500):
 # 计算预测值
     idx=0
     for i in allAT:
         AT=i
         XT=allXT[idx]
         ET=allET[idx]
-        Yt=allYT[idx]
+        YT=allYT[idx]
         yt=allyt[idx].view(-1)
         y_pred = md(AT,XT,ET,YT)
         # 计算损失
