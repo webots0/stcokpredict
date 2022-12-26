@@ -61,15 +61,51 @@ yt=torch.Tensor(np.random.rand(3,1))
 
 
 # 12*4 
-ET
+
 
 def gcn(AT,XT,ET,outSize):
     D12=degAT(AT)
     W1=torch.Tensor(np.random.rand(XT.shape[1],outSize))
+    W2=torch.Tensor(np.random.rand(ET.shape[1],outSize))
+    b1=torch.Tensor(np.random.rand(AT.shape[1],1))
     AX=D12.mm(AT).mm(D12).mm(XT).mm(W1)
+    WX=torch.sum(ET.mm(W2))
+    y=AX+WX+b1
+    return y
+
+
+H1=gcn(AT,XT,ET,7)
+    
+def corssNN(XT,ET,YT):
+    # XT 5*3   W3       YT 6*1
+    # 5*3 3*6  6*1 5*1
+    W3=torch.Tensor(np.random.rand(XT.shape[1],YT.shape[0]))
+    
+    xyT=XT.mm(W3).mm(YT)
+    # ET 12*4 W4        YT 6*1
+    # 12*4 4*6 6*1  12*1
+    W4=torch.Tensor(np.random.rand(ET.shape[1],YT.shape[0]))
+    eyT=torch.sum(ET.mm(W4).mm(YT))
+    
+    b2=torch.Tensor(np.random.rand(XT.shape[0],1))
+    
+    y=xyT+eyT+b2
+    return y
     
     
-    # 5*
-    #H1T=XT.mm(AT)*W1
-    pass
+H2=corssNN(XT,ET,YT)
+print(H1.shape)
+print(H2.shape)
+    
+
+def mutH1H2(H1,H2,outSize):
+    W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
+    W6=torch.Tensor(np.random.rand(H2.shape[1],outSize))
+    H12=H1.mm(W5).mm(H2).mm(W6)
+    return H12
+
+H12=mutH1H2(H1,H2,12)
+print(H12.shape)
+
+
 
