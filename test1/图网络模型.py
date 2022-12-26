@@ -29,27 +29,49 @@ from torch import nn
 node=5
 # 12 条边
 eg=12
+T=list(range(0,360))
+T=[x/2 for x in T]
+idx=0
+allXT=[]
+allAT=[]
+allET=[]
+allYT=[]
+allyt=[]
+for t in T:
+    if idx>9:
+        kxt=torch.Tensor(np.array([1,2,3])*t)
+        # 5个节点，每个节点三个特征，
+        XT=torch.Tensor(np.random.rand(node,3))*kxt
+        allXT.append(XT)
+        
+        # 5个节点的节点邻接矩阵
+        AT=torch.Tensor(np.random.randint(2,size=(node,node)))
+        for i in range(5):
+            AT[i][i]=1
+        allAT.append(AT)
+        
+        ket=torch.Tensor(np.array([4,3,2,1])*t)
+        # 12条边，每条边4个特征
+        ET=torch.Tensor(np.random.rand(12,4))*ket
+        allET.append(ET)
+        
+        # 前6个数据点
+        dt=np.array(T[idx-9:idx-3])
+        dt=np.sin(dt)
+        YT=torch.Tensor(dt).view(-1,1)
+        allYT.append(YT)
+        
+        # 预测最后3个数据点
+        dt=np.array(T[idx-3:idx])
+        dt=np.sin(dt)
+        yt=torch.Tensor(dt)
+        allyt.append(yt)
+        
+    idx+=1
 
-# 5个节点，每个节点三个特征，
-XT=torch.Tensor(np.random.rand(node,3))
-
-# 5个节点的节点邻接矩阵
-AT=torch.Tensor(np.random.randint(2,size=(node,node)))
-for i in range(5):
-    AT[i][i]=1
-
-# 12条边，每条边4个特征
-ET=torch.Tensor(np.random.rand(12,4))
-
-# 前6个数据点
-YT=torch.Tensor(np.random.rand(6,1))
-
-# 预测最后3个数据点
-yt=torch.Tensor(np.random.rand(1,3))
 
 
-
-# 计算度矩阵
+#%% 计算度矩阵
 
 def degAT(AT):
     #print(AT)
@@ -102,7 +124,7 @@ def mutH1H2(H1,H2,W5,W6):
     # W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
     # W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
     
-    H12=H1.mm(W5)+H2.mm(W6)
+    H12=torch.cat((H1.mm(W5),H2.mm(W6)),dim=0)
     return H12
 
 #H12=mutH1H2(H1,H2)
@@ -184,23 +206,29 @@ optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
  
 yt=yt.view(-1)
     
-for epoch in range(10):
+for epoch in range(100):
 # 计算预测值
-    y_pred = md(AT,XT,ET,YT)
-    # 计算损失
-    print(y_pred,yt)
-    loss = loss_fn(y_pred, yt)
-    
-    # 清空梯度
-    optimizer.zero_grad()
-    # 计算梯度
-    loss.backward()
-    
-    # 更新参数
-    optimizer.step()
+    idx=0
+    for i in allAT:
+        AT=i
+        XT=allXT[idx]
+        ET=allET[idx]
+        Yt=allYT[idx]
+        yt=allyt[idx].view(-1)
+        y_pred = md(AT,XT,ET,YT)
+        # 计算损失
+        #print(y_pred,yt)
+        loss = loss_fn(y_pred, yt)
+        
+        # 清空梯度
+        optimizer.zero_grad()
+        # 计算梯度
+        loss.backward()
+        
+        # 更新参数
+        optimizer.step()
+        idx+=1
+    if epoch%10==0:
+        print(loss.tolist())
 
 #%%
-da=[]
-for i in md.parameters():
-    da.append(i)
-    
