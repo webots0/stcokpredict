@@ -29,7 +29,7 @@ from torch import nn
 node=5
 # 12 条边
 eg=12
-T=list(range(0,360))
+T=list(range(0,1000))
 T=[x/2 for x in T]
 idx=0
 allXT=[]
@@ -124,7 +124,8 @@ def mutH1H2(H1,H2,W5,W6):
     # W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
     # W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
     
-    H12=torch.cat((H1.mm(W5),H2.mm(W6)),dim=0)
+    #H12=torch.cat((H1.mm(W5),H2.mm(W6)),dim=0)
+    H12=H1.mm(W5)+H2.mm(W6)
     return H12
 
 #H12=mutH1H2(H1,H2)
@@ -192,12 +193,13 @@ loss_fn = nn.MSELoss()
 optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
 
 
- 
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
 yt=yt.view(-1)
     
-for epoch in range(500):
+for epoch in range(80):
 # 计算预测值
     idx=0
+    
     for i in allAT:
         AT=i
         XT=allXT[idx]
@@ -217,7 +219,29 @@ for epoch in range(500):
         # 更新参数
         optimizer.step()
         idx+=1
+    
     if epoch%10==0:
         print(loss.tolist())
-
+        #break
 #%%
+import matplotlib.pyplot as plt
+y0=np.sin(T)
+plt.plot(y0[500:800],color='blue')
+yt=y0[0:6]
+y00=yt.tolist()
+yt=torch.Tensor(yt).view(-1,1)
+idx=0
+for i in allAT:
+    histy=yt[1:]
+    AT=i
+    XT=allXT[idx]
+    ET=allET[idx]
+    
+    y_pred = md(AT,XT,ET,yt).view(-1,1)
+    y00.append(y_pred[-1].tolist()[0])
+    yt=torch.cat((histy,y_pred[0].view(-1,1)),dim=0)
+    idx+=1
+    
+
+    
+plt.plot(y00[500:800],color='green')
