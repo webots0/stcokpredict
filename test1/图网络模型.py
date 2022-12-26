@@ -23,3 +23,9 @@ X-H来发现训练发现与Y特征的相关性,以及预测未来的Y
 '''
 import torch
 
+#x=torch.Tensor([1,2,3])
+
+x = torch.Tensor([[1, 2], [3, 4]])
+y = torch.Tensor([[5, 6], [7, 8]])
+z = x.mul(y) # z = [[15+27, 16+28], [35+47, 36+48]] = [[19, 22], [43, 50]]
+print(z)
