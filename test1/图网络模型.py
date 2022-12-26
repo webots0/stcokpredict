@@ -100,7 +100,7 @@ def mutH1H2(H1,H2,W5,W6):
     # W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
     # W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
     
-    H12=H1.mm(W5).mm(H2).mm(W6)
+    H12=H1.mm(W5)+H2.mm(W6)
     return H12
 
 #H12=mutH1H2(H1,H2)
@@ -130,7 +130,7 @@ b1=torch.Tensor(np.random.rand(AT.shape[1],1))
 b2=torch.Tensor(np.random.rand(XT.shape[0],1))
 H1= gcn(AT,XT,ET,W1,W2,b1)
 H2= corssNN(XT,ET,YT,W3,W4,b2)
-W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
+W5=torch.Tensor(np.random.rand(H1.shape[1],outSize2))
 W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
 class Model(nn.Module):
     def __init__(self,W1,W2,W3,W4,W5,W6,b1,b2):
@@ -186,7 +186,7 @@ for epoch in range(10):
 # 计算预测值
     y_pred = md(AT,XT,ET,YT)
     # 计算损失
-    
+    print(y_pred,yt)
     loss = loss_fn(y_pred, yt)
     
     # 清空梯度
@@ -198,5 +198,3 @@ for epoch in range(10):
     optimizer.step()
 
 #%%
-
-a=md(AT,XT,ET,YT) 
