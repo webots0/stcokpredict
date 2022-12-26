@@ -90,7 +90,7 @@ def gcn(AT,XT,ET,W1,W2,b1):
     # b1=torch.Tensor(np.random.rand(AT.shape[1],1))
     
     AX=D12.mm(AT).mm(D12).mm(XT).mm(W1)
-    WX=torch.sum(ET.mm(W2))
+    WX=torch.mean(ET.mm(W2))
     y=AX+WX+b1
     return y
 
@@ -120,12 +120,12 @@ def corssNN(XT,ET,YT,W3,W4,b2):
 #H2=corssNN(XT,ET,YT)
 
 
-def mutH1H2(H1,H2,W5,W6):
+def mutH1H2(H1,H2,W5,W6,b3):
     # W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
     # W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
     
     #H12=torch.cat((H1.mm(W5),H2.mm(W6)),dim=0)
-    H12=H1.mm(W5)+H2.mm(W6)
+    H12=H1.mm(W5)+H2.mm(W6)+b3
     return H12
 
 #H12=mutH1H2(H1,H2)
@@ -134,8 +134,8 @@ def mutH1H2(H1,H2,W5,W6):
 
 
 #%%
-outSize1=7
-outSize2=12
+outSize1=40
+outSize2=48
 W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
 W2=torch.Tensor(np.random.rand(ET.shape[1],outSize1))
 W3=torch.Tensor(np.random.rand(XT.shape[1],YT.shape[0]))
@@ -146,8 +146,9 @@ H1= gcn(AT,XT,ET,W1,W2,b1)
 H2= corssNN(XT,ET,YT,W3,W4,b2)
 W5=torch.Tensor(np.random.rand(H1.shape[1],outSize2))
 W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
+b3=torch.Tensor(np.random.rand(AT.shape[0],1))
 class Model(nn.Module):
-    def __init__(self,W1,W2,W3,W4,W5,W6,b1,b2):
+    def __init__(self,W1,W2,W3,W4,W5,W6,b1,b2,b3):
         super(Model,self).__init__()
         """
         W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
@@ -167,6 +168,7 @@ class Model(nn.Module):
         self.W4=nn.Parameter(W4)
         self.b1=nn.Parameter(b1)
         self.b2=nn.Parameter(b2)
+        self.b3=nn.Parameter(b3)
         
       
         self.W5=nn.Parameter(W5)
@@ -174,7 +176,7 @@ class Model(nn.Module):
         
         self.relu=nn.ReLU()
         self.tanh=nn.Tanh()
-        self.linear=nn.Linear(in_features=12, out_features=3)
+        self.linear=nn.Linear(in_features=48, out_features=3)
         
     def forward(self,AT,XT,ET,YT):
         
@@ -182,13 +184,13 @@ class Model(nn.Module):
         H1=self.tanh(H1)
         H2=corssNN(XT,ET,YT,self.W3,self.W4,self.b2)
         H2=self.tanh(H2)
-        H12=mutH1H2(H1,H2,self.W5,self.W6)
+        H12=mutH1H2(H1,H2,self.W5,self.W6,self.b3)
         H12=self.linear(H12)
         H12=torch.mean(H12,dim=0)
         
         return H12
 
-md=Model(W1,W2,W3,W4,W5,W6,b1,b2)        
+md=Model(W1,W2,W3,W4,W5,W6,b1,b2,b3)        
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
 
@@ -222,11 +224,11 @@ for epoch in range(80):
     
     if epoch%10==0:
         print(loss.tolist())
-        #break
+        break
 #%%
 import matplotlib.pyplot as plt
 y0=np.sin(T)
-plt.plot(y0[500:800],color='blue')
+plt.plot(y0[500:700],color='blue')
 yt=y0[0:6]
 y00=yt.tolist()
 yt=torch.Tensor(yt).view(-1,1)
@@ -244,4 +246,4 @@ for i in allAT:
     
 
     
-plt.plot(y00[500:800],color='green')
+plt.plot(y00[500:700],color='green')
