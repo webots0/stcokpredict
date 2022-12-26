@@ -55,7 +55,7 @@ ET=torch.Tensor(np.random.rand(12,4))
 YT=torch.Tensor(np.random.rand(6,1))
 
 # 预测最后3个数据点
-yt=torch.Tensor(np.random.rand(3,1))
+yt=torch.Tensor(np.random.rand(1,3))
 
 # 12*4 
 
@@ -119,10 +119,22 @@ class Quadratic(nn.Module):
     def forward(self, x):
         
         return self.a * x**2 + self.b * x + self.c
-
-#%% 
+#%%
+outSize1=7
+outSize2=12
+W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
+W2=torch.Tensor(np.random.rand(ET.shape[1],outSize1))
+W3=torch.Tensor(np.random.rand(XT.shape[1],YT.shape[0]))
+W4=torch.Tensor(np.random.rand(ET.shape[1],YT.shape[0]))
+b1=torch.Tensor(np.random.rand(AT.shape[1],1))
+b2=torch.Tensor(np.random.rand(XT.shape[0],1))
+H1= gcn(AT,XT,ET,W1,W2,b1)
+H2= corssNN(XT,ET,YT,W3,W4,b2)
+W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
+W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
 class Model(nn.Module):
-    def init(self,AT,XT,ET,YT,outSize1,outSize2):
+    def __init__(self,W1,W2,W3,W4,W5,W6,b1,b2):
+        super(Model,self).__init__()
         """
         W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
         W2=torch.Tensor(np.random.rand(ET.shape[1],outSize1))
@@ -134,41 +146,57 @@ class Model(nn.Module):
         W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
     
         """
-        W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
-        W2=torch.Tensor(np.random.rand(ET.shape[1],outSize1))
-        W3=torch.Tensor(np.random.rand(XT.shape[1],YT.shape[0]))
-        W4=torch.Tensor(np.random.rand(ET.shape[1],YT.shape[0]))
-        b1=torch.Tensor(np.random.rand(AT.shape[1],1))
-        b2=torch.Tensor(np.random.rand(XT.shape[0],1))
+       
         self.W1=nn.Parameter(W1)
-        self.W2=nn.Parameter(W1)
+        self.W2=nn.Parameter(W2)
         self.W3=nn.Parameter(W3)
         self.W4=nn.Parameter(W4)
         self.b1=nn.Parameter(b1)
         self.b2=nn.Parameter(b2)
         
-        H1= gcn(AT,XT,ET,W1,W2,b1)
-        H2= corssNN(XT,ET,YT,W3,W4,b2)
-        
-        W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
-        W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
+      
         self.W5=nn.Parameter(W5)
         self.W6=nn.Parameter(W6)
         
-        self.relu=nn.relu()
-        self.sigmoid=nn.sigmoid()
+        self.relu=nn.ReLU()
+        self.tanh=nn.Tanh()
+        self.linear=nn.Linear(in_features=12, out_features=3)
         
     def forward(self,AT,XT,ET,YT):
         
         H1=gcn(AT,XT,ET,self.W1,self.W2,self.b1)
-        H1=self.relu(H1)
+        H1=self.tanh(H1)
         H2=corssNN(XT,ET,YT,self.W3,self.W4,self.b2)
-        H2=self.relu(H2)
+        H2=self.tanh(H2)
         H12=mutH1H2(H1,H2,self.W5,self.W6)
-        H12=self.sigmoid(H12)
+        H12=self.linear(H12)
+        H12=torch.mean(H12,dim=0)
         
         return H12
-        
+
+md=Model(W1,W2,W3,W4,W5,W6,b1,b2)        
+loss_fn = nn.MSELoss()
+optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
+
+
+ 
+yt=yt.view(-1)
     
+for epoch in range(10):
+# 计算预测值
+    y_pred = md(AT,XT,ET,YT)
+    # 计算损失
     
+    loss = loss_fn(y_pred, yt)
     
+    # 清空梯度
+    optimizer.zero_grad()
+    # 计算梯度
+    loss.backward()
+    
+    # 更新参数
+    optimizer.step()
+
+#%%
+
+a=md(AT,XT,ET,YT) 
