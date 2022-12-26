@@ -24,7 +24,7 @@ X-H来发现训练发现与Y特征的相关性,以及预测未来的Y
 import torch
 import numpy as np
 
-
+from torch import nn
 # 5个节点
 node=5
 # 12 条边
@@ -51,17 +51,13 @@ def degAT(AT):
 # 12条边，每条边4个特征
 ET=torch.Tensor(np.random.rand(12,4))
 
-
 # 前6个数据点
 YT=torch.Tensor(np.random.rand(6,1))
-
 
 # 预测最后3个数据点
 yt=torch.Tensor(np.random.rand(3,1))
 
-
 # 12*4 
-
 
 def gcn(AT,XT,ET,outSize):
     D12=degAT(AT)
@@ -105,7 +101,10 @@ def mutH1H2(H1,H2,outSize):
     return H12
 
 H12=mutH1H2(H1,H2,12)
-print(H12.shape)
+
+Linear=nn.Linear(12,3)
+out=Linear(H12)
+print(H12.shape,out.shape)
 
 
 
