@@ -160,7 +160,15 @@ class Model(nn.Module):
         
     def forward(self,AT,XT,ET,YT):
         
-        pass
+        H1=gcn(AT,XT,ET,self.W1,self.W2,self.b1)
+        H1=self.relu(H1)
+        H2=corssNN(XT,ET,YT,self.W3,self.W4,self.b2)
+        H2=self.relu(H2)
+        H12=mutH1H2(H1,H2,self.W5,self.W6)
+        H12=self.sigmoid(H12)
+        
+        return H12
+        
     
     
     
