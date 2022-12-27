@@ -92,7 +92,7 @@ def gcn(AT,XT,ET,W1,W2,b1):
     # b1=torch.Tensor(np.random.rand(AT.shape[1],1))
     
     AX=D12.mm(AT).mm(D12).mm(XT).mm(W1)
-    WX=torch.sum(ET.mm(W2))
+    WX=torch.mean(ET.mm(W2))
     y=AX+WX+b1
     return y
 
@@ -137,7 +137,7 @@ def mutH1H2(H1,H2,W5,W6,b3):
 
 #%%
 outSize1=1
-outSize2=2
+outSize2=3
 W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
 W2=torch.Tensor(np.random.rand(ET.shape[1],outSize1))
 W3=torch.Tensor(np.random.rand(XT.shape[1],YT.shape[0]))
