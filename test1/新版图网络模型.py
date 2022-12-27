@@ -215,9 +215,7 @@ class Model(nn.Module,Gint):
         H1=graf0(self.W4).mm(XYT).mm(self.W5)+self.b3
         H2=graf0(self.W6).mm(EYT).mm(self.W7)+self.b4
         return (H1,H2)
-    def liner(self,inS,outS):
-        linear=nn.Linear(in_features=inS,out_features=outS)
-        return linear
+
     def ford(self,AT,XT,ET,YT):
         
         (H1,E1)=self.H1T(AT,XT,ET)
