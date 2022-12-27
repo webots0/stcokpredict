@@ -92,7 +92,7 @@ def gcn(AT,XT,ET,W1,W2,W12,b1):
     # b1=torch.Tensor(np.random.rand(AT.shape[1],1))
     
     AX=D12.mm(AT).mm(D12).mm(XT).mm(W1)
-    W12 = torch.where(W12 > 0, torch.ones_like(W12), torch.zeros_like(W12))
+    W12 = torch.ge(W12, 0)
     WX=W12.mm(ET).mm(W2)
     y=AX+WX+b1
     return y
@@ -109,8 +109,8 @@ def corssNN(XT,ET,YT,W3,W4,W7,W8,b2):
      # XT 5*3   W3       YT 6*1
     # 5*3 3*6  6*1 5*1
     # W3=k*5 XT=5*3 W4=3*1   YT=6*1 + W7 k*12  ET 12*4  W8 4*1   YT 6*1 b2 k*1
-    W3= torch.where(W3 > 0, torch.ones_like(W3), torch.zeros_like(W3))
-    W7= torch.where(W7 > 0, torch.ones_like(W7), torch.zeros_like(W7))
+    W3= torch.ge(W3, 0)
+    W7= torch.ge(W7, 0)
     xyT=W3.mm(XT).mm(W4).mm(YT)+W7.mm(ET).mm(W8).mm(YT)+b2
     # xyT=XT.mm(W3).mm(YT)
     # # ET 12*4 W4        YT 6*1
@@ -219,7 +219,7 @@ optimizer = torch.optim.SGD(md.parameters(), lr=0.000001)
 
 yt=yt.view(-1)
 loss=0
-for epoch in range(2000):
+for epoch in range(10000):
 # 计算预测值
     idx=0
     loss=[]
