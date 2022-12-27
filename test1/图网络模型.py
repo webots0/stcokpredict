@@ -92,6 +92,7 @@ def gcn(AT,XT,ET,W1,W2,W12,b1):
     # b1=torch.Tensor(np.random.rand(AT.shape[1],1))
     
     AX=D12.mm(AT).mm(D12).mm(XT).mm(W1)
+    W12 = torch.where(W12 > 0, torch.ones_like(W12), torch.zeros_like(W12))
     WX=W12.mm(ET).mm(W2)
     y=AX+WX+b1
     return y
@@ -108,6 +109,8 @@ def corssNN(XT,ET,YT,W3,W4,W7,W8,b2):
      # XT 5*3   W3       YT 6*1
     # 5*3 3*6  6*1 5*1
     # W3=k*5 XT=5*3 W4=3*1   YT=6*1 + W7 k*12  ET 12*4  W8 4*1   YT 6*1 b2 k*1
+    W3= torch.where(W3 > 0, torch.ones_like(W3), torch.zeros_like(W3))
+    W7= torch.where(W7 > 0, torch.ones_like(W7), torch.zeros_like(W7))
     xyT=W3.mm(XT).mm(W4).mm(YT)+W7.mm(ET).mm(W8).mm(YT)+b2
     # xyT=XT.mm(W3).mm(YT)
     # # ET 12*4 W4        YT 6*1
@@ -138,9 +141,9 @@ def mutH1H2(H1,H2,W5,W6,b3):
 
 
 
-outSize1=6
-outSize2=12
-outSize3=80
+outSize1=3
+outSize2=5
+outSize3=100
 W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
 W12=torch.Tensor(np.random.rand(AT.shape[0],ET.shape[0]))
 W2=torch.Tensor(np.random.rand(ET.shape[1],outSize1))
@@ -158,7 +161,9 @@ W5=torch.Tensor(np.random.rand(H1.shape[1],outSize3))
 W6=torch.Tensor(np.random.rand(H2.shape[1],outSize3))
 b3=torch.Tensor(np.random.rand(AT.shape[0],1))
 H12=mutH1H2(H1,H2,W5,W6,b3)
+
 print(H12.shape)
+
 class Model(nn.Module):
     def __init__(self,W1,W12,W2,W3,W4,W5,W6,W7,W8,b1,b2,b3):
         super(Model,self).__init__()
@@ -238,12 +243,12 @@ for epoch in range(2000):
     optimizer.zero_grad()
     # 计算梯度
     loss1.backward()
-    lr = 0.0000001;
+    lr = 0.00001;
     if epoch>500:
         
         for param_group in optimizer.param_groups:
             
-            param_group['lr'] = 0.000001
+            param_group['lr'] = 0.00001
     # 更新参数
     optimizer.step()
    
