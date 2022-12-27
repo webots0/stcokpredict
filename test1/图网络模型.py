@@ -29,8 +29,8 @@ from torch import nn
 node=5
 # 12 条边
 eg=12
-T=list(range(0,1000))
-T=[x/2 for x in T]
+T=list(range(0,50))
+T=[x/10 for x in T]
 idx=0
 allXT=[]
 allAT=[]
@@ -38,16 +38,18 @@ allET=[]
 allYT=[]
 allyt=[]
 for t in T:
-    if idx>9:
+    if idx>7:
         kxt=torch.Tensor(np.array([1,2,3])*t)
         # 5个节点，每个节点三个特征，
         XT=torch.Tensor(np.random.rand(node,3))*kxt
         allXT.append(XT)
         
         # 5个节点的节点邻接矩阵
-        AT=torch.Tensor(np.random.randint(2,size=(node,node)))
-        for i in range(5):
-            AT[i][i]=1
+        if idx==8:
+            AT=torch.Tensor(np.random.randint(2,size=(node,node)))
+            for i in range(5):
+                AT[i][i]=1
+            
         allAT.append(AT)
         
         ket=torch.Tensor(np.array([4,3,2,1])*t)
@@ -56,14 +58,14 @@ for t in T:
         allET.append(ET)
         
         # 前6个数据点
-        dt=np.array(T[idx-9:idx-3])
-        dt=np.sin(dt)
+        dt=np.array(T[idx-7:idx-1])
+        dt=np.sin(dt)**2
         YT=torch.Tensor(dt).view(-1,1)
         allYT.append(YT)
         
         # 预测最后3个数据点
-        dt=np.array(T[idx-3:idx])
-        dt=np.sin(dt)
+        dt=np.array(T[idx-1:idx])
+        dt=np.sin(dt)**2
         yt=torch.Tensor(dt)
         allyt.append(yt)
         
@@ -124,8 +126,8 @@ def mutH1H2(H1,H2,W5,W6,b3):
     # W5=torch.Tensor(np.random.rand(H1.shape[1],H2.shape[0]))
     # W6=torch.Tensor(np.random.rand(H2.shape[1],outSize2))
     
-    #H12=torch.cat((H1.mm(W5),H2.mm(W6)),dim=0)
-    H12=H1.mm(W5)+H2.mm(W6)+b3
+    H12=torch.cat((H1.mm(W5),H2.mm(W6)),dim=0)
+    #H12=H1.mm(W5)+H2.mm(W6)+b3
     return H12
 
 #H12=mutH1H2(H1,H2)
@@ -134,8 +136,8 @@ def mutH1H2(H1,H2,W5,W6,b3):
 
 
 #%%
-outSize1=40
-outSize2=48
+outSize1=2
+outSize2=60
 W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
 W2=torch.Tensor(np.random.rand(ET.shape[1],outSize1))
 W3=torch.Tensor(np.random.rand(XT.shape[1],YT.shape[0]))
@@ -168,20 +170,20 @@ class Model(nn.Module):
         self.W4=nn.Parameter(W4)
         self.b1=nn.Parameter(b1)
         self.b2=nn.Parameter(b2)
-        self.b3=nn.Parameter(b3)
+        self.b3=nn.Parameter(b3) 
         
       
         self.W5=nn.Parameter(W5)
         self.W6=nn.Parameter(W6)
         
-        self.relu=nn.ReLU()
+        self.relu=nn.LeakyReLU()
         self.tanh=nn.Tanh()
-        self.linear=nn.Linear(in_features=48, out_features=3)
+        self.linear=nn.Linear(in_features=outSize2, out_features=1)
         
     def forward(self,AT,XT,ET,YT):
         
         H1=gcn(AT,XT,ET,self.W1,self.W2,self.b1)
-        H1=self.tanh(H1)
+        H1=self.relu(H1)
         H2=corssNN(XT,ET,YT,self.W3,self.W4,self.b2)
         H2=self.tanh(H2)
         H12=mutH1H2(H1,H2,self.W5,self.W6,self.b3)
@@ -192,13 +194,14 @@ class Model(nn.Module):
 
 md=Model(W1,W2,W3,W4,W5,W6,b1,b2,b3)        
 loss_fn = nn.MSELoss()
-optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
+#loss_fu= nn.L1Loss()
+optimizer = torch.optim.SGD(md.parameters(), lr=0.02)
 
 
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
 yt=yt.view(-1)
     
-for epoch in range(80):
+for epoch in range(30):
 # 计算预测值
     idx=0
     
@@ -224,26 +227,27 @@ for epoch in range(80):
     
     if epoch%10==0:
         print(loss.tolist())
-        break
+        #break
 #%%
 import matplotlib.pyplot as plt
-y0=np.sin(T)
-plt.plot(y0[500:700],color='blue')
+y0=np.sin(T)**2
+plt.plot(y0[0:50],color='blue')
 yt=y0[0:6]
 y00=yt.tolist()
-yt=torch.Tensor(yt).view(-1,1)
+yt0=torch.Tensor(yt).view(-1,1)
 idx=0
 for i in allAT:
     histy=yt[1:]
     AT=i
     XT=allXT[idx]
     ET=allET[idx]
-    
+    yt=allYT[idx]
     y_pred = md(AT,XT,ET,yt).view(-1,1)
-    y00.append(y_pred[-1].tolist()[0])
-    yt=torch.cat((histy,y_pred[0].view(-1,1)),dim=0)
+    y00.append(y_pred[0].tolist()[0])
+    #yt=torch.cat((histy,y_pred[0].view(-1,1)),dim=0)
     idx+=1
+    #break
     
 
     
-plt.plot(y00[500:700],color='green')
+plt.plot(y00[0:50],color='green')
