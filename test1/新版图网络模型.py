@@ -119,7 +119,7 @@ class Gint:
     def getWb(self,AT,XT,ET):
         # AT 5*5 XT=5*3 W1 3*H1out1
         W1=torch.rand(XT.shape[1],self.H1out1)
-        b1=torch.rand(XT.shape[1],1)
+        b1=torch.rand(XT.shape[0],1)
         
         # W2=12*12   ET=12*4 W3 4*H1out2
         W2=torch.randn(ET.shape[0],ET.shape[0])
@@ -184,7 +184,8 @@ class Model(nn.Module,Gint):
         self.relu=nn.LeakyReLU()
         self.tanh=nn.Tanh()
         
-        
+        self.ler1=nn.Linear(in_features=36,out_features=12)
+        self.ler2=nn.Linear(in_features=12, out_features=1)
     def XEY(self,XT,YT,ET):
         
         linear1=nn.Linear(in_features=XT.shape[1],out_features=1)
@@ -205,26 +206,41 @@ class Model(nn.Module,Gint):
         H1=self.W4.mm(XYT).mm(self.W5)+self.b3
         H2=self.W6.mm(EYT).mm(self.W7)+self.b4
         return (H1,H2)
-    def forward(self,AT,XT,ET,YT):
+    def liner(self,inS,outS):
+        linear=nn.Linear(in_features=inS,out_features=outS)
+        return linear
+    def ford(self,AT,XT,ET,YT):
         
         (H1,E1)=self.H1T(AT,XT,ET)
         (H2,E2)=self.H2T(XT,YT,ET)
         
+        return (H1,H2,E1,E2)
+    def forward(self,AT,XT,ET,YT,outS):
+      
+        (H1,H2,E1,E2)=self.ford(AT,XT,ET,YT)
+        H12=torch.cat((H1.view(-1),H2.view(-1)),dim=0)
+        E12=torch.cat((E1.view(-1),E2.view(-1)),dim=0)
+        HE12=torch.cat((H12.view(-1),E12.view(-1)),dim=0)
+        
+        
+        out=self.ler1(HE12)
+        out=self.ler2(out)
+        
+        return out
     
-        return H12
-    
-    
-    
-#%%
-md=Model(W1,W12,W2,W3,W4,W5,W6,W7,W8,b1,b2,b3)        
+md=Model(W1, W2, W3, W4, W5, W6, W7, b1, b2, b3, b4)
+
+a=md(AT,XT,ET,YT,1)
+print(a)    
+#%%    
 loss_fn = nn.MSELoss()
 #loss_fu= nn.L1Loss()
-optimizer = torch.optim.SGD(md.parameters(), lr=0.000001)
+optimizer = torch.optim.SGD(md.parameters(), lr=0.001)
 
 
 yt=yt.view(-1)
 loss=0
-for epoch in range(1000):
+for epoch in range(3000):
 # 计算预测值
     idx=0
     loss=[]
@@ -234,7 +250,7 @@ for epoch in range(1000):
         ET=allET[idx]
         YT=allYT[idx]
         yt=allyt[idx].view(-1)
-        y_pred = md(AT,XT,ET,YT)
+        y_pred = md(AT,XT,ET,YT,1)
         # 计算损失
         #print(y_pred,yt)
         loss0 =loss_fn(y_pred, yt)
@@ -243,20 +259,20 @@ for epoch in range(1000):
        
        
         idx+=1
-    # 清空梯度    
-    loss1=sum(loss)/len(loss)
-    optimizer.zero_grad()
-    # 计算梯度
-    loss1.backward()
-    lr = 0.00001;
-    if epoch>500:
+        # 清空梯度    
         
-        for param_group in optimizer.param_groups:
+        optimizer.zero_grad()
+        # 计算梯度
+        loss0.backward()
+        lr = 0.1;
+        if epoch>500:
             
-            param_group['lr'] = 0.00001
-    # 更新参数
-    optimizer.step()
-   
+            for param_group in optimizer.param_groups:
+                
+                param_group['lr'] = 0.01
+        # 更新参数
+        optimizer.step()
+    loss1=sum(loss)/len(loss)
     #print(loss1)
     if epoch%10==0:
         print('----1-----',loss1.tolist())
@@ -276,7 +292,7 @@ for i in allAT:
     XT=allXT[idx]
     ET=allET[idx]
     yt=allYT[idx]
-    y_pred = md(AT,XT,ET,yt).view(-1,1)
+    y_pred = md(AT,XT,ET,yt,1).view(-1,1)
     y00.append(y_pred[0].tolist()[0])
     #yt=torch.cat((histy,y_pred[0].view(-1,1)),dim=0)
     idx+=1
