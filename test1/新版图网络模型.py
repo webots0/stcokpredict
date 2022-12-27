@@ -123,20 +123,20 @@ class Gint:
         
         # W2=12*12   ET=12*4 W3 4*H1out2
         W2=torch.randn(ET.shape[0],ET.shape[0])
-        W2=self.graf(W2)
+        #W2=self.graf(W2)
         W3=torch.rand(ET.shape[1],self.H1out2)
         b2=torch.rand(ET.shape[0],1)
         
         # W4 6*6 XYT=(5+1)*1 W5 1*1 b3 6*1
         W4=torch.randn(self.XYT.shape[0],self.XYT.shape[0])
         W5=torch.rand(self.XYT.shape[1],self.H2out1)
-        W4=self.graf(W4)
+        #W4=self.graf(W4)
         b3=torch.rand(self.XYT.shape[0],1)
         
         # W6=13*13   EYT=(12+1)*1 W7=1*1 b4=13*1
         W6=torch.randn(self.EYT.shape[0],self.EYT.shape[0])
         W7=torch.rand(self.EYT.shape[1],self.H2out2)
-        W6=self.graf(W6)
+        #W6=self.graf(W6)
         b4=torch.rand(self.EYT.shape[0],1)
         
         
@@ -147,7 +147,7 @@ clsA=Gint(XT,YT,ET,1,1,1,1)
 (W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4)=clsA.getWb(AT,XT,ET)
 
    
-    
+ 
 def graf0(matrix):
         
     matrix = torch.where(matrix > 0, torch.tensor(1.), torch.tensor(0.)) # 将矩阵里面的大于0的变成1，小于等于0的变成0
@@ -156,6 +156,13 @@ def graf0(matrix):
         matrix[i, i] = 1. # 将矩阵对角线赋值为1
     matrix=degAT(matrix)# 求度矩阵
     return matrix
+def grafW(matrix):
+    matrix = torch.where(matrix > 0, torch.tensor(1.), torch.tensor(0.)) # 将矩阵里面的大于0的变成1，小于等于0的变成0
+
+    for i in range(matrix.size(0)):
+        matrix[i, i] = 1. # 将矩阵对角线赋值为1
+    return matrix
+
 
 
 
@@ -194,8 +201,8 @@ class Model(nn.Module,Gint):
         self.L2=nn.Linear(in_features=YT.shape[1],out_features=1)
         self.L3=nn.Linear(in_features=ET.shape[1],out_features=1)
         self.L4=nn.Linear(in_features=YT.shape[1],out_features=1)
-        self.ler1=nn.Linear(in_features=36,out_features=10)
-        self.ler2=nn.Linear(in_features=10, out_features=1)
+        self.ler1=nn.Linear(in_features=36,out_features=18)
+        self.ler2=nn.Linear(in_features=18, out_features=1)
     def XEY(self,XT,YT,ET):
         
         
@@ -247,7 +254,7 @@ optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
 
 yt=yt.view(-1)
 loss=0
-for epoch in range(80):
+for epoch in range(120):
 # 计算预测值
     idx=0
     loss=[]
@@ -286,6 +293,12 @@ for epoch in range(80):
         print('----1-----',loss1.tolist())
         
 #%%
+testW=md.state_dict()
+w2=grafW(testW['W2'])
+w4=grafW(testW['W4'])
+w6=grafW(testW['W6'])
+print(w4)
+
 import matplotlib.pyplot as plt
 y0=np.sin(T)**2
 plt.plot(y0[0:500],color='blue')
