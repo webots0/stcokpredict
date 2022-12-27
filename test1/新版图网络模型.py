@@ -142,7 +142,7 @@ class Gint:
         
         
         return (W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4)
-clsA=Gint(XT,YT,ET,3,3,4,4)
+clsA=Gint(XT,YT,ET,1,1,1,1)
 
 (W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4)=clsA.getWb(AT,XT,ET)
 
@@ -194,7 +194,7 @@ class Model(nn.Module,Gint):
         self.L2=nn.Linear(in_features=YT.shape[1],out_features=1)
         self.L3=nn.Linear(in_features=ET.shape[1],out_features=1)
         self.L4=nn.Linear(in_features=YT.shape[1],out_features=1)
-        self.ler1=nn.Linear(in_features=127,out_features=10)
+        self.ler1=nn.Linear(in_features=36,out_features=10)
         self.ler2=nn.Linear(in_features=10, out_features=1)
     def XEY(self,XT,YT,ET):
         
@@ -242,12 +242,12 @@ print(a)
   
 loss_fn = nn.MSELoss()
 #loss_fu= nn.L1Loss()
-optimizer = torch.optim.SGD(md.parameters(), lr=0.0001)
+optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
 
 
 yt=yt.view(-1)
 loss=0
-for epoch in range(300):
+for epoch in range(80):
 # 计算预测值
     idx=0
     loss=[]
@@ -276,7 +276,7 @@ for epoch in range(300):
             
             for param_group in optimizer.param_groups:
                 
-                param_group['lr'] = 0.000001
+                param_group['lr'] = 0.01
                 
         # 更新参数
         optimizer.step()
@@ -331,7 +331,7 @@ model = LinearModel(6, 1)
 inputs = torch.randn(1, 6)
 
 # 进行预测
-outputs = model(YT.t())
+outputs = model(YT)
 
 print(outputs)
 
@@ -349,7 +349,7 @@ for epoch in range(30):
         ET=allET[idx]
         YT=allYT[idx]
         yt=allyt[idx].view(-1)
-        y_pred = model(YT.t())
+        y_pred = model(YT)
         # 计算损失
         #print(y_pred,yt)
         loss0 =loss_fn(y_pred, yt)
@@ -370,14 +370,14 @@ for epoch in range(30):
    # print(loss1)
     if epoch%10==0:
         print('-----2----',loss1.tolist())
-        if loss1<0.5:
+        if loss1<0.001:
             break
         
     
     
 import matplotlib.pyplot as plt
 y0=np.sin(T)**2
-plt.plot(y0[0:50],color='blue')
+plt.plot(y0[0:500],color='blue')
 yt=y0[0:6]
 y00=yt.tolist()
 yt0=torch.Tensor(yt).view(-1,1)
@@ -388,13 +388,13 @@ for i in allAT:
     XT=allXT[idx]
     ET=allET[idx]
     yt=allYT[idx]
-    y_pred = model(yt.t()).view(-1,1)
+    y_pred = model(yt).view(-1,1)
     y00.append(y_pred[0].tolist()[0])
     #yt=torch.cat((histy,y_pred[0].view(-1,1)),dim=0)
     idx+=1
     #break
         
-plt.plot(y00[0:50],color='green')
+plt.plot(y00[0:500],color='green')
 
 
 
