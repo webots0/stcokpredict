@@ -148,7 +148,14 @@ clsA=Gint(XT,YT,ET,1,1,1,1)
 
    
     
+def graf0(matrix):
+        
+    matrix = torch.where(matrix > 0, torch.tensor(1.), torch.tensor(0.)) # 将矩阵里面的大于0的变成1，小于等于0的变成0
 
+    for i in range(matrix.size(0)):
+        matrix[i, i] = 1. # 将矩阵对角线赋值为1
+    matrix=degAT(matrix)# 求度矩阵
+    return matrix
 
 
 
@@ -184,8 +191,8 @@ class Model(nn.Module,Gint):
         self.relu=nn.LeakyReLU()
         self.tanh=nn.Tanh()
         
-        self.ler1=nn.Linear(in_features=36,out_features=12)
-        self.ler2=nn.Linear(in_features=12, out_features=1)
+        self.ler1=nn.Linear(in_features=36,out_features=36)
+        self.ler2=nn.Linear(in_features=36, out_features=1)
     def XEY(self,XT,YT,ET):
         
         linear1=nn.Linear(in_features=XT.shape[1],out_features=1)
@@ -196,15 +203,16 @@ class Model(nn.Module,Gint):
         EYT=torch.cat((linear3(ET),linear4(YT)),dim=0)
         return (XYT,EYT)
     def H1T(self,AT,XT,ET):
-        H1=AT.mm(XT).mm(self.W1)+self.b1
-        H2=W2.mm(ET).mm(self.W3)+self.b2
+        H1=graf0(AT).mm(XT).mm(self.W1)+self.b1
+        #W2=graf0(W2)
+        H2=graf0(self.W2).mm(ET).mm(self.W3)+self.b2
         return (H1,H2)
     
     def H2T(self,XT,YT,ET):
         (XYT,EYT)=self.XEY(XT,YT,ET)
         
-        H1=self.W4.mm(XYT).mm(self.W5)+self.b3
-        H2=self.W6.mm(EYT).mm(self.W7)+self.b4
+        H1=graf0(self.W4).mm(XYT).mm(self.W5)+self.b3
+        H2=graf0(self.W6).mm(EYT).mm(self.W7)+self.b4
         return (H1,H2)
     def liner(self,inS,outS):
         linear=nn.Linear(in_features=inS,out_features=outS)
@@ -265,11 +273,12 @@ for epoch in range(300):
         # 计算梯度
         loss0.backward()
         lr = 0.01;
-        if epoch>500:
+        if epoch>50:
             
             for param_group in optimizer.param_groups:
                 
-                param_group['lr'] = 0.001
+                param_group['lr'] = 0.000001
+                
         # 更新参数
         optimizer.step()
     loss1=sum(loss)/len(loss)
@@ -280,7 +289,7 @@ for epoch in range(300):
 #%%
 import matplotlib.pyplot as plt
 y0=np.sin(T)**2
-plt.plot(y0[0:100],color='blue')
+plt.plot(y0[0:500],color='blue')
 yt=y0[0:6]
 y00=yt.tolist()
 yt0=torch.Tensor(yt).view(-1,1)
@@ -298,7 +307,7 @@ for i in allAT:
     idx+=1
     #break
     
-plt.plot(y00[0:100],color='red')
+plt.plot(y00[0:500],color='red')
 
 #%% 线性模型预测序列
 import torch
