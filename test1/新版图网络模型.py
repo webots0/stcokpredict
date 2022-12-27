@@ -142,7 +142,7 @@ class Gint:
         
         
         return (W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4)
-clsA=Gint(XT,YT,ET,1,1,1,1)
+clsA=Gint(XT,YT,ET,3,3,4,4)
 
 (W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4)=clsA.getWb(AT,XT,ET)
 
@@ -190,17 +190,18 @@ class Model(nn.Module,Gint):
         
         self.relu=nn.LeakyReLU()
         self.tanh=nn.Tanh()
-        
-        self.ler1=nn.Linear(in_features=36,out_features=36)
-        self.ler2=nn.Linear(in_features=36, out_features=1)
+        self.L1=nn.Linear(in_features=XT.shape[1],out_features=1)
+        self.L2=nn.Linear(in_features=YT.shape[1],out_features=1)
+        self.L3=nn.Linear(in_features=ET.shape[1],out_features=1)
+        self.L4=nn.Linear(in_features=YT.shape[1],out_features=1)
+        self.ler1=nn.Linear(in_features=127,out_features=10)
+        self.ler2=nn.Linear(in_features=10, out_features=1)
     def XEY(self,XT,YT,ET):
         
-        linear1=nn.Linear(in_features=XT.shape[1],out_features=1)
-        linear2=nn.Linear(in_features=YT.shape[1],out_features=1)
-        XYT=torch.cat((linear1(XT),linear2(YT)),dim=0)
-        linear3=nn.Linear(in_features=ET.shape[1],out_features=1)
-        linear4=nn.Linear(in_features=YT.shape[1],out_features=1)
-        EYT=torch.cat((linear3(ET),linear4(YT)),dim=0)
+        
+        XYT=torch.cat((self.L1(XT),self.L2(YT)),dim=0)
+
+        EYT=torch.cat((self.L3(ET),self.L4(YT)),dim=0)
         return (XYT,EYT)
     def H1T(self,AT,XT,ET):
         H1=graf0(AT).mm(XT).mm(self.W1)+self.b1
