@@ -23,7 +23,7 @@ X-H来发现训练发现与Y特征的相关性,以及预测未来的Y
 '''
 import torch
 import numpy as np
-
+import torch.optim.lr_scheduler as lr_scheduler
 from torch import nn
 # 5个节点
 node=5
@@ -138,9 +138,9 @@ def mutH1H2(H1,H2,W5,W6,b3):
 
 
 
-outSize1=1
+outSize1=6
 outSize2=12
-outSize3=1
+outSize3=80
 W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
 W12=torch.Tensor(np.random.rand(AT.shape[0],ET.shape[0]))
 W2=torch.Tensor(np.random.rand(ET.shape[1],outSize1))
@@ -196,10 +196,11 @@ class Model(nn.Module):
     def forward(self,AT,XT,ET,YT):
         
         H1=gcn(AT,XT,ET,self.W1,self.W2,self.W12,self.b1)
-        H1=self.tanh(H1)
+        H1=self.relu(H1)
         H2=corssNN(XT,ET,YT,self.W3,self.W4,self.W7,self.W8,self.b2)
-        H2=self.tanh(H2)
+        H2=self.relu(H2)
         H12=mutH1H2(H1,H2,self.W5,self.W6,self.b3)
+        H12=self.tanh(H12)
         H12=self.linear(H12)
         H12=torch.sum(H12,dim=0)
         
@@ -208,13 +209,12 @@ class Model(nn.Module):
 md=Model(W1,W12,W2,W3,W4,W5,W6,W7,W8,b1,b2,b3)        
 loss_fn = nn.MSELoss()
 #loss_fu= nn.L1Loss()
-optimizer = torch.optim.SGD(md.parameters(), lr=0.02)
+optimizer = torch.optim.SGD(md.parameters(), lr=0.000001)
 
 
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
 yt=yt.view(-1)
 loss=0
-for epoch in range(30):
+for epoch in range(2000):
 # 计算预测值
     idx=0
     loss=[]
@@ -238,7 +238,12 @@ for epoch in range(30):
     optimizer.zero_grad()
     # 计算梯度
     loss1.backward()
-    
+    lr = 0.0000001;
+    if epoch>500:
+        
+        for param_group in optimizer.param_groups:
+            
+            param_group['lr'] = 0.000001
     # 更新参数
     optimizer.step()
    
