@@ -35,8 +35,8 @@ from torch import nn
 node=5
 # 12 条边
 eg=12
-T=list(range(0,50))
-T=[x/12 for x in T]
+T=list(range(0,500))
+T=[x/30 for x in T]
 idx=0
 allXT=[]
 allAT=[]
@@ -148,7 +148,7 @@ clsA=Gint(XT,YT,ET,1,1,1,1)
 
    
     
-#%%
+
 
 
 
@@ -232,15 +232,15 @@ md=Model(W1, W2, W3, W4, W5, W6, W7, b1, b2, b3, b4)
 
 a=md(AT,XT,ET,YT,1)
 print(a)    
-#%%    
+  
 loss_fn = nn.MSELoss()
 #loss_fu= nn.L1Loss()
-optimizer = torch.optim.SGD(md.parameters(), lr=0.001)
+optimizer = torch.optim.SGD(md.parameters(), lr=0.0001)
 
 
 yt=yt.view(-1)
 loss=0
-for epoch in range(3000):
+for epoch in range(300):
 # 计算预测值
     idx=0
     loss=[]
@@ -264,12 +264,12 @@ for epoch in range(3000):
         optimizer.zero_grad()
         # 计算梯度
         loss0.backward()
-        lr = 0.1;
+        lr = 0.01;
         if epoch>500:
             
             for param_group in optimizer.param_groups:
                 
-                param_group['lr'] = 0.01
+                param_group['lr'] = 0.001
         # 更新参数
         optimizer.step()
     loss1=sum(loss)/len(loss)
@@ -277,10 +277,10 @@ for epoch in range(3000):
     if epoch%10==0:
         print('----1-----',loss1.tolist())
         
-
+#%%
 import matplotlib.pyplot as plt
 y0=np.sin(T)**2
-plt.plot(y0[0:50],color='blue')
+plt.plot(y0[0:100],color='blue')
 yt=y0[0:6]
 y00=yt.tolist()
 yt0=torch.Tensor(yt).view(-1,1)
@@ -298,7 +298,7 @@ for i in allAT:
     idx+=1
     #break
     
-plt.plot(y00[0:50],color='red')
+plt.plot(y00[0:100],color='red')
 
 #%% 线性模型预测序列
 import torch
