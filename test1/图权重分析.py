@@ -97,7 +97,7 @@ for i in L:
     
 #fig, ax = plt.subplots()
 def update0(num):
-    plt.imshow(torch.rand(13,13).mm(data[num]))
+    plt.imshow(data[num])
     #plt.show()
 ani = FuncAnimation(plt.gcf(), update0, frames=len(data), interval=500)
 plt.show()
