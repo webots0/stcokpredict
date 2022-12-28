@@ -176,8 +176,9 @@ plt.show()  # 显示图 作者：手把手教你学编程 https://www.bilibili.c
 import torch
 
 # 假设矩阵X已经定义
-X = torch.rand(12,1)
-print(X)
+X = torch.rand(12,2)
+
+
 def fromXtoA(x):
     
     if x.shape[1]>1:
