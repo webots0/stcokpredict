@@ -147,8 +147,7 @@ clsA=Gint(XT,YT,ET,1,1,1,1)
 
 (W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4)=clsA.getWb(AT,XT,ET)
 
-   
-print(W1)
+
 
 def graf0(matrix):
         
@@ -261,7 +260,7 @@ w110=[]
 w22=[]
 w33=[]
 idf=0
-for epoch in range(30):
+for epoch in range(300):
 # 计算预测值
     idx=0
     loss=[]
@@ -301,9 +300,9 @@ for epoch in range(30):
         #         param_group['lr'] = 0.01
                 
         # 更新参数
-        if idx==20:
-            tW=md.state_dict()
-            w00=tW['W1']
+        # if idx==20:
+        #     tW=md.state_dict()
+        #     w00=tW['W1']
             
         
     loss1=sum(loss)/len(loss)
@@ -320,8 +319,15 @@ for epoch in range(30):
         
         # w22.append(w2)
         # w33.append(w3)
-        torch.save(md.state_dict(), 'model_weights_{}.pt'.format(epoch+1))
-        idf+=1
+        # 创建权重数据目录
+        # import os
+        # if not os.path.exists('权重数据'):
+        #     os.makedirs('权重数据')
+        
+        # 保存权重值
+        #torch.save(model.state_dict(), '权重数据/model_weights.pt')
+        torch.save(md.state_dict(), 'WeightData/model_weights_{}.pt'.format(epoch+1))
+       
         print(f'----{epoch+1}-----',loss1.tolist())
         
 #%%
