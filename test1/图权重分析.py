@@ -163,3 +163,50 @@ def update(n):  # 动态更新函数
 
 ani = FuncAnimation(fig, update, frames=10, interval=50, blit=False, repeat=False)  # 创建动画效果
 plt.show()  # 显示图 作者：手把手教你学编程 https://www.bilibili.com/read/cv13169116 出处：bilibili
+
+
+
+
+
+
+
+
+
+#%%
+import torch
+
+# 假设矩阵X已经定义
+X = torch.rand(12,1)
+print(X)
+def fromXtoA(x):
+    
+    if x.shape[1]>1:
+        X=torch.corrcoef(x)
+        print(X)
+        a = X.min()
+        b = X.max()
+        
+        X_transformed = torch.where(X < a + (b - a) / 2, torch.tensor(0.), torch.tensor(1.))
+    else:
+        X_transformed=torch.eye(x.shape[0])
+            
+    return X_transformed
+
+
+a=fromXtoA(X)
+print(a)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
