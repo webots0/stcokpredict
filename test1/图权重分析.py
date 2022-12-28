@@ -75,9 +75,9 @@ for i in L:
     a1=torch.load('WeightData/'+i)
     #mat=grafW(a1['W4']-torch.mean(a1['W4'])).numpy()
     if idx==0:
-        R1=a1['W4']
+        R1=a1['W3']
     else:
-        R2=a1['W4']
+        R2=a1['W3']
         
     if idx>0:
         a0=R2-R1
@@ -86,7 +86,7 @@ for i in L:
     #print(a1['W4'])
    # plotG(mat)
     idx=idx+1
-    r=a1['W6']
+    r=a1['W3']
     data.append(r)
    
    
