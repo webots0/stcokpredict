@@ -203,8 +203,8 @@ class Model(nn.Module):
         self.L2=nn.Linear(in_features=YT.shape[1],out_features=1)
         self.L3=nn.Linear(in_features=ET.shape[1],out_features=1)
         self.L4=nn.Linear(in_features=YT.shape[1],out_features=1)
-        self.ler1=nn.Linear(in_features=36,out_features=1)
-        #self.ler2=nn.Linear(in_features=18, out_features=1)
+        self.ler1=nn.Linear(in_features=36,out_features=18)
+        self.ler2=nn.Linear(in_features=18, out_features=1)
     def XEY(self,XT,YT,ET):
         
         
@@ -215,14 +215,14 @@ class Model(nn.Module):
     def H1T(self,AT,XT,ET):
         H1=graf0(AT).mm(XT).mm(self.W1)+self.b1
         #W2=graf0(W2)
-        H2=graf0(self.W2).mm(ET).mm(self.W3)+self.b2
+        H2=self.W2.mm(ET).mm(self.W3)+self.b2
         return (H1,H2)
     
     def H2T(self,XT,YT,ET):
         (XYT,EYT)=self.XEY(XT,YT,ET)
         
-        H1=graf0(self.W4).mm(XYT).mm(self.W5)+self.b3
-        H2=graf0(self.W6).mm(EYT).mm(self.W7)+self.b4
+        H1=self.W4.mm(XYT).mm(self.W5)+self.b3
+        H2=self.W6.mm(EYT).mm(self.W7)+self.b4
         return (H1,H2)
 
     def ford(self,AT,XT,ET,YT):
@@ -240,7 +240,7 @@ class Model(nn.Module):
         
         
         out=self.ler1(self.tanh(HE12))
-        #out=self.ler2(out)
+        out=self.ler2(out)
         
         return out
     
