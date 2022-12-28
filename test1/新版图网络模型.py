@@ -77,6 +77,7 @@ for t in T:
         
     idx+=1
 
+#%%
 
 
 #%% 计算度矩阵
@@ -246,7 +247,7 @@ md=Model(W1, W2, W3, W4, W5, W6, W7, b1, b2, b3, b4)
 
 a=md(AT,XT,ET,YT,1)
 print(a)    
-  
+ #%% 
 loss_fn = nn.MSELoss()
 #loss_fu= nn.L1Loss()
 optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
@@ -254,7 +255,10 @@ optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
 
 yt=yt.view(-1)
 loss=0
-for epoch in range(120):
+w22=[]
+w44=[]
+w66=[]
+for epoch in range(320):
 # 计算预测值
     idx=0
     loss=[]
@@ -290,6 +294,14 @@ for epoch in range(120):
     loss1=sum(loss)/len(loss)
     #print(loss1)
     if epoch%10==0:
+        tW=md.state_dict()
+        w2=grafW(tW['W2'])
+        w4=grafW(tW['W4'])
+        w6=grafW(tW['W6'])
+        w22.append(w2)
+        w44.append(w4)
+        w66.append(w6)
+        
         print('----1-----',loss1.tolist())
         
 #%%
