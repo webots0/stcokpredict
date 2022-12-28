@@ -1,21 +1,39 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 28 02:49:53 2022
+Created on Thu Dec 29 02:37:26 2022
 
 @author: webot
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec 26 04:52:04 2022
 
-@author: webot
-"""
-
-print('----------')
+import torch
+import numpy as np
+from torch import nn
 
 
-# 新闻数据，随时间变化的一个网络结构
+
+def fromXtoA(x):
+    
+    if x.shape[1]>1:
+        X=torch.corrcoef(x)
+        
+        a = X.min()
+        b = X.max()
+        
+        X_transformed = torch.where(X < a + (b - a) / 2, torch.tensor(0.), torch.tensor(1.))
+        X_transformed = torch.tril(X_transformed, -1)
+        for i in range(X_transformed.shape[0]):
+            X_transformed[i,i]=1
+    else:
+        X_transformed=torch.eye(x.shape[0])
+            
+    return X_transformed
+
+X=torch.rand(3,2)
+a=fromXtoA(X)
+
+#print(a)
+#% 新闻数据，随时间变化的一个网络结构
 
 # 股票数据,随时间变化的一个单序列数据
 
@@ -28,9 +46,7 @@ X-H来发现训练发现与Y特征的相关性,以及预测未来的Y
 
 很合理
 '''
-import torch
-import numpy as np
-from torch import nn
+
 # 5个节点
 node=5
 # 12 条边
@@ -77,10 +93,10 @@ for t in T:
         
     idx+=1
 
-#%%
+#%
 
 
-#%% 计算度矩阵
+#% 计算度矩阵
 
 def degAT(AT):
     #print(AT)
@@ -169,7 +185,7 @@ aa=grafW(W6)
 
 
 class Model(nn.Module):
-    def __init__(self,W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4):
+    def __init__(self,W1,W3,W5,W7,b1,b2,b3,b4):
         super(Model,self).__init__()
         """
         W1=torch.Tensor(np.random.rand(XT.shape[1],outSize1))
@@ -184,11 +200,11 @@ class Model(nn.Module):
         """
        
         self.W1=nn.Parameter(W1)
-        self.W2=nn.Parameter(W2)
+        #self.W2=nn.Parameter(W2)
         self.W3=nn.Parameter(W3)
-        self.W4=nn.Parameter(W4)
+        #self.W4=nn.Parameter(W4)
         self.W5=nn.Parameter(W5)
-        self.W6=nn.Parameter(W6)
+        #self.W6=nn.Parameter(W6)
         self.W7=nn.Parameter(W7)
         self.b1=nn.Parameter(b1)
         self.b2=nn.Parameter(b2)
@@ -215,14 +231,16 @@ class Model(nn.Module):
     def H1T(self,AT,XT,ET):
         H1=graf0(AT).mm(XT).mm(self.W1)+self.b1
         #W2=graf0(W2)
-        H2=graf0(self.tanh(self.W2)).mm(ET).mm(self.W3)+self.b2
+        W2=fromXtoA(ET)
+        H2=graf0(W2).mm(ET).mm(self.W3)+self.b2
         return (H1,H2)
     
     def H2T(self,XT,YT,ET):
         (XYT,EYT)=self.XEY(XT,YT,ET)
-        
-        H1=graf0(self.tanh(self.W4)).mm(XYT).mm(self.W5)+self.b3
-        H2=graf0(self.tanh(self.W6)).mm(EYT).mm(self.W7)+self.b4
+        W4=fromXtoA(XYT)
+        W6=fromXtoA(EYT)
+        H1=graf0(W4).mm(XYT).mm(self.W5)+self.b3
+        H2=graf0(W6).mm(EYT).mm(self.W7)+self.b4
         return (H1,H2)
 
     def ford(self,AT,XT,ET,YT):
@@ -244,7 +262,7 @@ class Model(nn.Module):
         
         return out
     
-md=Model(W1, W2, W3, W4, W5, W6, W7, b1, b2, b3, b4)
+md=Model(W1, W3, W5, W7, b1, b2, b3, b4)
 
 a=md(AT,XT,ET,YT,1)
 print(a)    
@@ -332,10 +350,7 @@ for epoch in range(300):
         
 #%%
 testW=md.state_dict()
-w2=grafW(testW['W2'])
-w4=grafW(testW['W4'])
-w6=grafW(testW['W6'])
-print(w4)
+
 
 import matplotlib.pyplot as plt
 y0=np.sin(T)**2
@@ -446,7 +461,6 @@ for i in allAT:
     #break
         
 plt.plot(y00[0:500],color='green')
-
 
 
 

@@ -10,7 +10,7 @@ import torch
 import numpy as np
 from torch import nn
 
-
+# 将相关矩阵转为节点的邻接矩阵
 
 def fromXtoA(x):
     
@@ -350,10 +350,10 @@ for epoch in range(300):
         
 #%%
 testW=md.state_dict()
-w2=grafW(testW['W2'])
-w4=grafW(testW['W4'])
-w6=grafW(testW['W6'])
-print(w4)
+# w2=grafW(testW['W1'])
+# w4=grafW(testW['W3'])
+# w6=grafW(testW['W5'])
+# print(w4)
 
 import matplotlib.pyplot as plt
 y0=np.sin(T)**2
