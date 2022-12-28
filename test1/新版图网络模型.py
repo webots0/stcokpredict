@@ -215,14 +215,14 @@ class Model(nn.Module):
     def H1T(self,AT,XT,ET):
         H1=graf0(AT).mm(XT).mm(self.W1)+self.b1
         #W2=graf0(W2)
-        H2=self.W2.mm(ET).mm(self.W3)+self.b2
+        H2=graf0(self.tanh(self.W2)).mm(ET).mm(self.W3)+self.b2
         return (H1,H2)
     
     def H2T(self,XT,YT,ET):
         (XYT,EYT)=self.XEY(XT,YT,ET)
         
-        H1=self.W4.mm(XYT).mm(self.W5)+self.b3
-        H2=self.W6.mm(EYT).mm(self.W7)+self.b4
+        H1=graf0(self.tanh(self.W4)).mm(XYT).mm(self.W5)+self.b3
+        H2=graf0(self.tanh(self.W6)).mm(EYT).mm(self.W7)+self.b4
         return (H1,H2)
 
     def ford(self,AT,XT,ET,YT):
