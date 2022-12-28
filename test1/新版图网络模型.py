@@ -148,7 +148,8 @@ clsA=Gint(XT,YT,ET,1,1,1,1)
 (W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4)=clsA.getWb(AT,XT,ET)
 
    
- 
+print(W1)
+
 def graf0(matrix):
         
     matrix = torch.where(matrix > 0, torch.tensor(1.), torch.tensor(0.)) # 将矩阵里面的大于0的变成1，小于等于0的变成0
@@ -164,10 +165,11 @@ def grafW(matrix):
         matrix[i, i] = 1. # 将矩阵对角线赋值为1
     return matrix
 
+aa=grafW(W6)
 
 
 
-class Model(nn.Module,Gint):
+class Model(nn.Module):
     def __init__(self,W1,W2,W3,W4,W5,W6,W7,b1,b2,b3,b4):
         super(Model,self).__init__()
         """
@@ -202,8 +204,8 @@ class Model(nn.Module,Gint):
         self.L2=nn.Linear(in_features=YT.shape[1],out_features=1)
         self.L3=nn.Linear(in_features=ET.shape[1],out_features=1)
         self.L4=nn.Linear(in_features=YT.shape[1],out_features=1)
-        self.ler1=nn.Linear(in_features=36,out_features=18)
-        self.ler2=nn.Linear(in_features=18, out_features=1)
+        self.ler1=nn.Linear(in_features=36,out_features=1)
+        #self.ler2=nn.Linear(in_features=18, out_features=1)
     def XEY(self,XT,YT,ET):
         
         
@@ -238,8 +240,8 @@ class Model(nn.Module,Gint):
         HE12=torch.cat((H12.view(-1),E12.view(-1)),dim=0)
         
         
-        out=self.ler1(HE12)
-        out=self.ler2(out)
+        out=self.ler1(self.tanh(HE12))
+        #out=self.ler2(out)
         
         return out
     
@@ -247,7 +249,7 @@ md=Model(W1, W2, W3, W4, W5, W6, W7, b1, b2, b3, b4)
 
 a=md(AT,XT,ET,YT,1)
 print(a)    
- #%% 
+ 
 loss_fn = nn.MSELoss()
 #loss_fu= nn.L1Loss()
 optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
@@ -255,10 +257,11 @@ optimizer = torch.optim.SGD(md.parameters(), lr=0.01)
 
 yt=yt.view(-1)
 loss=0
+w110=[]
 w22=[]
-w44=[]
-w66=[]
-for epoch in range(320):
+w33=[]
+idf=0
+for epoch in range(30):
 # 计算预测值
     idx=0
     loss=[]
@@ -268,6 +271,11 @@ for epoch in range(320):
         ET=allET[idx]
         YT=allYT[idx]
         yt=allyt[idx].view(-1)
+        
+        # 清空梯度    
+        
+        optimizer.zero_grad()
+        
         y_pred = md(AT,XT,ET,YT,1)
         # 计算损失
         #print(y_pred,yt)
@@ -277,32 +285,44 @@ for epoch in range(320):
        
        
         idx+=1
-        # 清空梯度    
         
-        optimizer.zero_grad()
         # 计算梯度
+        
         loss0.backward()
         lr = 0.01;
-        if epoch>50:
+        for name, param in md.named_parameters():
+            if name == 'W1':
+                param.data*=1
+        optimizer.step()
+        # if epoch>50:
             
-            for param_group in optimizer.param_groups:
+        #     for param_group in optimizer.param_groups:
                 
-                param_group['lr'] = 0.01
+        #         param_group['lr'] = 0.01
                 
         # 更新参数
-        optimizer.step()
+        if idx==20:
+            tW=md.state_dict()
+            w00=tW['W1']
+            
+        
     loss1=sum(loss)/len(loss)
     #print(loss1)
-    if epoch%10==0:
-        tW=md.state_dict()
-        w2=grafW(tW['W2'])
-        w4=grafW(tW['W4'])
-        w6=grafW(tW['W6'])
-        w22.append(w2)
-        w44.append(w4)
-        w66.append(w6)
+    if (epoch+1)%10==0:
+        # md0=md;
+        # tW=md0.state_dict()
+        #w1=tW['W1']
+        #print('W1====',w1)
+        #w110.append(md.state_dict())
+        # print(tW['W1'])
+        # w2=tW['W2']
+        # w3=tW['W3']
         
-        print('----1-----',loss1.tolist())
+        # w22.append(w2)
+        # w33.append(w3)
+        torch.save(md.state_dict(), 'model_weights_{}.pt'.format(epoch+1))
+        idf+=1
+        print(f'----{epoch+1}-----',loss1.tolist())
         
 #%%
 testW=md.state_dict()
