@@ -318,7 +318,9 @@ for epoch in range(300):
         #         param_group['lr'] = 0.01
                 
         # 更新参数
-        # if idx==20:
+        if idx==250:
+            break
+            
         #     tW=md.state_dict()
         #     w00=tW['W1']
             
@@ -360,18 +362,19 @@ y0=np.sin(T)**2
 plt.plot(y0[0:500],color='blue')
 yt=y0[0:6]
 y00=yt.tolist()
-yt0=torch.Tensor(yt).view(-1,1)
+yt=torch.Tensor(yt).view(-1,1).t()
 idx=0
 for i in allAT:
     
-    histy=yt[1:]
+    histy=yt[:,1:]
     AT=i
     XT=allXT[idx]
     ET=allET[idx]
-    yt=allYT[idx]
+    if idx<250:
+        yt=allYT[idx]
     y_pred = md(AT,XT,ET,yt,1).view(-1,1)
     y00.append(y_pred[0].tolist()[0])
-    #yt=torch.cat((histy,y_pred[0].view(-1,1)),dim=0)
+    yt=torch.cat((histy,y_pred),dim=-1)
     idx+=1
     #break
     
@@ -408,7 +411,7 @@ print(outputs)
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
-for epoch in range(30):
+for epoch in range(200):
     
     idx=0
     loss=[]
@@ -427,6 +430,9 @@ for epoch in range(30):
        
        
         idx+=1
+        if idx==250:
+            print('----------')
+            break
     # 清空梯度    
     loss1=sum(loss)/len(loss)
     optimizer.zero_grad()
@@ -439,27 +445,27 @@ for epoch in range(30):
    # print(loss1)
     if epoch%10==0:
         print('-----2----',loss1.tolist())
-        if loss1<0.001:
+        if loss1<0.0001:
             break
         
     
-    
+#%%    
 import matplotlib.pyplot as plt
 y0=np.sin(T)**2
 plt.plot(y0[0:500],color='blue')
 yt=y0[0:6]
 y00=yt.tolist()
-yt0=torch.Tensor(yt).view(-1,1)
+yt=torch.Tensor(yt)
 idx=0
 for i in allAT:
     histy=yt[1:]
     AT=i
     XT=allXT[idx]
     ET=allET[idx]
-    yt=allYT[idx]
+    #yt=allYT[idx]
     y_pred = model(yt).view(-1,1)
     y00.append(y_pred[0].tolist()[0])
-    #yt=torch.cat((histy,y_pred[0].view(-1,1)),dim=0)
+    yt=torch.cat((histy,y_pred[0]),dim=0)
     idx+=1
     #break
         
