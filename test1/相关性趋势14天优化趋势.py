@@ -81,8 +81,8 @@ def objc(x0):
     
     for i in range(20):
         code=b[i]
-        c0=close_df[code][14]
-        c1=close_df[code][15:]
+        c0=close_df[code][15]
+        c1=close_df[code][16:]
         c2=(c1/c0-1).mean() # 涨幅大小
         r=r+a[code]
         c=c+c2
@@ -98,11 +98,11 @@ class MyProblem(ElementwiseProblem):
 
     def __init__(self):
         #self.start=start
-        super().__init__(n_var=14,
+        super().__init__(n_var=15,
                          n_obj=2,
                          n_ieq_constr=0,
-                         xl=2*np.array([-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]),
-                         xu=2*np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,1]))
+                         xl=1*np.array([-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]),
+                         xu=1*np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]))
 
     def _evaluate(self, x, out, *args, **kwargs):
         (f1,f2)=objc(x)
@@ -121,7 +121,7 @@ from pymoo.optimize import minimize
 termination = get_termination("n_gen", 80)
 for i in range(14):
     try:
-        code0,close_df=get_close_df(start=i)
+        code0,close_df=get_close_df(start=i*15)
         problem = MyProblem()
         
             
@@ -175,3 +175,50 @@ plt.figure()
 plt.plot(X[9,:])
 
 plt.show()
+
+
+
+#%%
+Y=[]
+ff=[]
+for i in range(14):
+    try:
+        f=np.genfromtxt(f'data_F\\{i}.csv',delimiter=',')
+        x=np.genfromtxt(f"data_X\\{i}.csv",delimiter=',')
+        f1=f[f[:,0]<-16,:]
+        idx=f1[:,1].argmin()
+        ff.append(f1[idx,1])
+        y=x[idx,:]
+        Y.append(y)
+        plt.figure(figsize=(7,5))
+        plt.plot(y)
+        plt.show()
+    
+    
+        # plt.figure(figsize=(7, 5))
+        # plt.scatter(f[:, 0], f[:, 1], s=30, facecolors='none', edgecolors='blue')  
+        # plt.show()      
+    except:
+        pass
+
+#%%
+y0=0
+for y in Y:
+    y0=y0+y
+y0=y0/14    
+#%%
+code0,close_df=get_close_df(start=15)
+id0=0
+for y in Y:
+    #if ff[id0]<-1:
+    (r,c)=objc(y0)
+    print(c)
+    id0+=1
+#%%
+(r,c)=objc(y0)
+print(c)
+#%%
+plt.plot(y0)
+plt.show()    
+    
+
