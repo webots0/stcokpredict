@@ -112,16 +112,19 @@ class MyProblem(ElementwiseProblem):
         out["G"] = []
 
 #%%
+from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.operators.crossover.sbx import SBX
+from pymoo.operators.mutation.pm import PM
+from pymoo.operators.sampling.rnd import FloatRandomSampling
+from pymoo.termination import get_termination  
+from pymoo.optimize import minimize
+termination = get_termination("n_gen", 80)
 for i in range(14):
     try:
         code0,close_df=get_close_df(start=i)
         problem = MyProblem()
         
             
-        from pymoo.algorithms.moo.nsga2 import NSGA2
-        from pymoo.operators.crossover.sbx import SBX
-        from pymoo.operators.mutation.pm import PM
-        from pymoo.operators.sampling.rnd import FloatRandomSampling
         
         algorithm = NSGA2(
             pop_size=80,
@@ -133,24 +136,22 @@ for i in range(14):
         )
         
         
-        from pymoo.termination import get_termination
-        
-        termination = get_termination("n_gen", 80)
-        
-        
-        from pymoo.optimize import minimize
+       
         
         res = minimize(problem,
                        algorithm,
-                       ('n_gen',10),
+                       ('n_gen',100),
                        seed=1,
                        save_history=True,
                        verbose=True)
         
         X = res.X
         F = res.F
-        
-        np.savetxt(fname, X)
+        xname=f"data_X\\{i}.csv"
+        np.savetxt(xname, X,delimiter=',')
+        fname=f"data_F\\{i}.csv"
+        np.savetxt(fname, F,delimiter=',')
+        print(f'保存第{i}成功')
     except:
         
         
@@ -159,6 +160,7 @@ for i in range(14):
 
 #%%
 
+#%%
 import matplotlib.pyplot as plt
 xl, xu = problem.bounds()
 plt.figure(figsize=(7, 5))
