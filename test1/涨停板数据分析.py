@@ -277,15 +277,6 @@ for code in code_df["code"]:
 
 #%% 当天模型测试
 
-c0=1
-print("当前所属的类别是",c0,"类")
-num=c0
-C0=cluster_centers[c0,:]
-C0=C0.reshape(10,5)
-C0=pd.DataFrame(C0)
-
-
-
 
 start=0
 data_R0=[]
@@ -312,12 +303,11 @@ for code in code_df["code"]:
         low_r=data["low"]
         vloum=data["vol"]
         data_rr=pd.concat([open_r,close_r,low_r,high_r,vloum],axis=1)
-        data_r=data_rr.iloc.apply(normalize2)
-        cr=corrAB(data_r, C0)
+        data_r=data_rr.apply(normalize2)
+        #cr=corrAB(data_r, C0)
         #data_r0=data_rr.iloc[-1,:]
-        if cr>0.7:
-            print(cr)
-            data_R0.append(code)
+        #print(data_r)
+        data_R0.append(data_r)
        
         #break
     except:
@@ -325,7 +315,28 @@ for code in code_df["code"]:
         pass
     
     if idx%100==0:
-        print(idx)
+        print(idx,len(data_R0))
+        #break
     idx+=1
 
-
+#%%
+code=code_df["code"]
+c0=20
+print("当前所属的类别是",c0,"类")
+num=c0
+C0=cluster_centers[c0,:]
+C0=C0.reshape(10,5)
+C0=pd.DataFrame(C0)
+idx=0
+Code=[]
+for r0 in data_R0:
+    if len(r0)==10:
+        cd=code[idx]
+        cr=corrAB(r0,C0)
+        
+        if cr>0.8:
+            Code.append(cd)
+        idx+=1
+    
+        
+print(Code)
