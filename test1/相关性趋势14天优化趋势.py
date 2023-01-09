@@ -82,7 +82,7 @@ def objc(x0):
     for i in range(20):
         code=b[i]
         c0=close_df[code][15]
-        c1=close_df[code][16:]
+        c1=close_df[code][15:]
         c2=(c1/c0-1).mean() # 涨幅大小
         r=r+a[code]
         c=c+c2
@@ -191,14 +191,13 @@ for i in range(14):
         y=x[idx,:]
         Y.append(y)
         plt.figure(figsize=(7,5))
-        plt.plot(y)
+        plt.scatter(f[:,0],f[:,1])
         plt.show()
-    
-    
         # plt.figure(figsize=(7, 5))
         # plt.scatter(f[:, 0], f[:, 1], s=30, facecolors='none', edgecolors='blue')  
         # plt.show()      
     except:
+        
         pass
 
 #%%
@@ -220,5 +219,31 @@ print(c)
 #%%
 plt.plot(y0)
 plt.show()    
+#%%
+def objc1(x0):
+    df0=pd.DataFrame({'001':x0})
+    a={}
     
+    for code in code0:
+        a[code]=close_df[code].corr(df0['001'])
+        
+    b=sorted(a,key=a.get,reverse=True)
+    r=0 # 相关系数
+    c=0 # 涨幅
+    aa=[]
+    cc=[]
+    for i in range(20):
+        code=b[i]
+        c0=close_df[code][14]
+        c1=close_df[code][15:]
+        c2=(c1/c0-1)
+        cc.append(c2)
+        aa.append(a[code])
+        
+        
+    return aa,cc
+(aa,cc)=objc1(y0)
+
+print(aa)
+print(cc)    
 
