@@ -217,8 +217,8 @@ x_data = ["1", "2", "3", "4","5","6","7","8","9","10"]
     .render("简单K线图.html")
 )
 
-#%% 预测测试模型
-c0=1
+#%% 历史数据测试模型
+c0=9
 print("当前所属的类别是",c0,"类")
 num=c0
 C0=cluster_centers[c0,:]
@@ -256,7 +256,7 @@ for code in code_df["code"]:
         data_r=data_rr.iloc[:-1,:].apply(normalize2)
         cr=corrAB(data_r, C0)
         #data_r0=data_rr.iloc[-1,:]
-        if cr>0.9:
+        if cr>0.8:
             print(cr)
             rc=data["close"].iloc[-1]
             ro=data["open"].iloc[-1]
@@ -273,3 +273,59 @@ for code in code_df["code"]:
     if idx%100==0:
         print(idx)
     idx+=1
+
+
+#%% 当天模型测试
+
+c0=1
+print("当前所属的类别是",c0,"类")
+num=c0
+C0=cluster_centers[c0,:]
+C0=C0.reshape(10,5)
+C0=pd.DataFrame(C0)
+
+
+
+
+start=0
+data_R0=[]
+
+
+
+if api.connect('106.14.201.131', 7709):
+    print('连接成功')
+else:
+    raise ValueError('连接失败')
+
+end = 10
+close_df=[]
+code0=[]
+idx=0
+
+for code in code_df["code"]:
+    try:
+        data = api.to_df(api.get_security_bars(9,0,code,start,end)) #
+        
+        open_r=data["open"]
+        close_r=data["close"]
+        high_r=data["high"]
+        low_r=data["low"]
+        vloum=data["vol"]
+        data_rr=pd.concat([open_r,close_r,low_r,high_r,vloum],axis=1)
+        data_r=data_rr.iloc.apply(normalize2)
+        cr=corrAB(data_r, C0)
+        #data_r0=data_rr.iloc[-1,:]
+        if cr>0.7:
+            print(cr)
+            data_R0.append(code)
+       
+        #break
+    except:
+        
+        pass
+    
+    if idx%100==0:
+        print(idx)
+    idx+=1
+
+
