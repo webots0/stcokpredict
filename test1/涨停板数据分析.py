@@ -388,6 +388,9 @@ print(sorted_list)
 cd=np.array(sorted_list)
 cd20=cd[:20,0]
 cd_20=cd[-20:,0]
+id0=round(len(cd)/2)
+cd_z_20=cd[id0:id0+20,0]
 np.savetxt('sortCode\\000.txt', cd, fmt='%s')
-np.savetxt('sortCode\\20.txt', cd20, fmt='%s')
-np.savetxt('sortCode\\000_20.txt', cd_20, fmt='%s')
+np.savetxt('sortCode\\前_20.txt', cd20, fmt='%s')
+np.savetxt('sortCode\\后_20.txt', cd_20, fmt='%s')
+np.savetxt('sortCode\\中间_20.txt', cd_z_20, fmt='%s')
