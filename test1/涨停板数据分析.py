@@ -375,5 +375,15 @@ for c0 in range(len(cc)):
     print("选择股票如下：",Code)
     
 #%%
-cd=np.array(Code)
+
+import collections
+
+# Count the number of occurrences of each element in the list
+counter = collections.Counter(Code)
+
+# Sort the elements by their frequency
+sorted_list = sorted(counter.items(), key=lambda x: x[1], reverse=True)
+
+print(sorted_list)
+cd=np.array(sorted_list)
 np.savetxt(f'newCode\\{c0}.txt', cd, fmt='%s')
