@@ -374,7 +374,7 @@ for c0 in range(len(cc)):
           
     print("选择股票如下：",Code)
     
-#%%
+#%% 85 选择20组
 
 import collections
 
@@ -390,7 +390,68 @@ cd20=cd[:20,0]
 cd_20=cd[-20:,0]
 id0=round(len(cd)/2)
 cd_z_20=cd[id0:id0+20,0]
-np.savetxt('sortCode\\000.txt', cd, fmt='%s')
+np.savetxt('sortCode\\000.txt', cd[:,0], fmt='%s')
 np.savetxt('sortCode\\前_20.txt', cd20, fmt='%s')
 np.savetxt('sortCode\\后_20.txt', cd_20, fmt='%s')
 np.savetxt('sortCode\\中间_20.txt', cd_z_20, fmt='%s')
+
+
+#%%
+def corrAB(A,B):
+    A=A.apply(normalize2)
+    B=B.apply(normalize2)
+    x1=np.array(A)
+    x2=np.array(B)
+    
+    x1_=np.mean(x1)
+    x2_=np.mean(x2)
+    x3=np.sum((x1-x1_)*(x2-x2_))
+    x4=np.sum((x1-x1_)**2)*np.sum((x2-x2_)**2)
+    x34=x3/np.sqrt(x4)
+    return x34
+cc=np.load("聚类中心_0.npy")
+code=code_df["code"]
+Code_0=[]
+Code=[]
+for c0 in range(len(cc)):
+    print("当前所属的类别是",c0,"类")
+    num=c0
+    C0=cluster_centers[c0,:]
+    C0=C0.reshape(10,5)
+    C0=pd.DataFrame(C0)
+    idx=0
+    
+    for r0 in data_R0:
+        if len(r0)==10:
+            cd=code[idx]
+            cr=corrAB(r0,C0)
+            
+            if cr>0.95:
+                Code.append(cd)
+            idx+=1
+        
+          
+    print("选择股票如下：",Code)
+#%% 95 选择10组
+
+
+
+import collections
+
+# Count the number of occurrences of each element in the list
+counter = collections.Counter(Code)
+
+# Sort the elements by their frequency
+sorted_list = sorted(counter.items(), key=lambda x: x[1], reverse=True)
+
+print(sorted_list)
+cd=np.array(sorted_list)
+cd20=cd[:10,0]
+cd_20=cd[-10:,0]
+id0=round(len(cd)/2)
+cd_z_20=cd[id0:id0+10,0]
+np.savetxt('sortCode\\000_10.txt', cd[:,0], fmt='%s')
+np.savetxt('sortCode\\前_10.txt', cd20, fmt='%s')
+np.savetxt('sortCode\\后_10.txt', cd_20, fmt='%s')
+np.savetxt('sortCode\\中间_10.txt', cd_z_20, fmt='%s')
+    
