@@ -35,7 +35,7 @@ code_df=code_df.reset_index(drop=True)
 start=0
 data_R=[]
 
-for start in range(20):
+for start in range(250):
 
     if api.connect('106.14.201.131', 7709):
         print('连接成功')
@@ -85,24 +85,42 @@ for dr in data_R:
     d1=d0.to_numpy().reshape(50)
     D=np.concatenate((D,d1[np.newaxis,:]),axis=0)
     
+#%%
+D1=np.empty((0,50))
+for dx in D:
+
+    a1=np.isnan(dx)
+    a2=np.alltrue(~a1)
+    print(a2)
+    if a2:
+       print(a2)
+        
+       D1=np.concatenate((D1,dx[np.newaxis,:]),axis=0)
     
+        
+        
+   
       
 #%% Kmeans进行聚类
 from sklearn.cluster import KMeans
 
 kmeans = KMeans(n_clusters=5)
-kmeans.fit(D)
+kmeans.fit(D1)
 cluster_centers = kmeans.cluster_centers_
-labels = kmeans.predict(D)
+labels = kmeans.predict(D1)
 print("kmeans 分类数为5")
 #%% 传递信息聚类
 from sklearn.cluster import AffinityPropagation
 
-clustering = AffinityPropagation(preference=-70,random_state=1).fit(D)
+clustering = AffinityPropagation(random_state=1).fit(D1)
 cluster_centers = clustering.cluster_centers_
-labels=clustering.fit_predict(D)
+labels=clustering.fit_predict(D1)
 numC=max(labels)+1
 print("自动分开为",numC,"类")
+#%%
+np.save("聚类中心_0",cluster_centers)
+#%%
+cc=np.load("聚类中心_0.npy")
 #%% 将原始数据进行按照聚类模型的标签进行分类
 idx=0
 L=[]
@@ -278,7 +296,7 @@ for code in code_df["code"]:
 #%% 当天模型测试
 
 
-start=0
+start=1
 data_R0=[]
 
 
@@ -319,24 +337,43 @@ for code in code_df["code"]:
         #break
     idx+=1
 
-#%%
-code=code_df["code"]
-c0=20
-print("当前所属的类别是",c0,"类")
-num=c0
-C0=cluster_centers[c0,:]
-C0=C0.reshape(10,5)
-C0=pd.DataFrame(C0)
-idx=0
-Code=[]
-for r0 in data_R0:
-    if len(r0)==10:
-        cd=code[idx]
-        cr=corrAB(r0,C0)
-        
-        if cr>0.8:
-            Code.append(cd)
-        idx+=1
+#%% 保存选择的股票数据
+def corrAB(A,B):
+    A=A.apply(normalize2)
+    B=B.apply(normalize2)
+    x1=np.array(A)
+    x2=np.array(B)
     
+    x1_=np.mean(x1)
+    x2_=np.mean(x2)
+    x3=np.sum((x1-x1_)*(x2-x2_))
+    x4=np.sum((x1-x1_)**2)*np.sum((x2-x2_)**2)
+    x34=x3/np.sqrt(x4)
+    return x34
+cc=np.load("聚类中心_0.npy")
+code=code_df["code"]
+Code_0=[]
+Code=[]
+for c0 in range(len(cc)):
+    print("当前所属的类别是",c0,"类")
+    num=c0
+    C0=cluster_centers[c0,:]
+    C0=C0.reshape(10,5)
+    C0=pd.DataFrame(C0)
+    idx=0
+    
+    for r0 in data_R0:
+        if len(r0)==10:
+            cd=code[idx]
+            cr=corrAB(r0,C0)
+            
+            if cr>0.8:
+                Code.append(cd)
+            idx+=1
         
-print(Code)
+          
+    print("选择股票如下：",Code)
+    
+#%%
+cd=np.array(Code)
+np.savetxt(f'newCode\\{c0}.txt', cd, fmt='%s')
