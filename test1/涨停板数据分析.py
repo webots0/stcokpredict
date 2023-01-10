@@ -386,4 +386,8 @@ sorted_list = sorted(counter.items(), key=lambda x: x[1], reverse=True)
 
 print(sorted_list)
 cd=np.array(sorted_list)
-np.savetxt(f'newCode\\{c0}.txt', cd, fmt='%s')
+cd20=cd[:20,0]
+cd_20=cd[-20:,0]
+np.savetxt('sortCode\\000.txt', cd, fmt='%s')
+np.savetxt('sortCode\\20.txt', cd20, fmt='%s')
+np.savetxt('sortCode\\000_20.txt', cd_20, fmt='%s')
