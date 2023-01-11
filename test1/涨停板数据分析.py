@@ -31,7 +31,7 @@ code_dff.append(code_df["code"].tail(code_location[2]).to_frame())
 code_df=pd.concat(code_dff,axis=0)
 code_df=code_df.reset_index(drop=True)
 
-
+#%%
 start=0
 data_R=[]
 
