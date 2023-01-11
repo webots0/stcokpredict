@@ -296,7 +296,7 @@ for code in code_df["code"]:
 #%% 当天模型测试
 
 
-start=1
+start=0
 data_R0=[]
 
 
@@ -338,6 +338,7 @@ for code in code_df["code"]:
     idx+=1
 
 #%% 保存选择的股票数据
+#%% 80选择
 def corrAB(A,B):
     A=A.apply(normalize2)
     B=B.apply(normalize2)
@@ -374,7 +375,7 @@ for c0 in range(len(cc)):
           
     print("选择股票如下：",Code)
     
-#%% 85 选择20组
+#% 80 选择20组
 
 import collections
 
@@ -396,7 +397,7 @@ np.savetxt('sortCode\\后_20.txt', cd_20, fmt='%s')
 np.savetxt('sortCode\\中间_20.txt', cd_z_20, fmt='%s')
 
 
-#%%
+#%% 95 选择
 def corrAB(A,B):
     A=A.apply(normalize2)
     B=B.apply(normalize2)
@@ -432,7 +433,7 @@ for c0 in range(len(cc)):
         
           
     print("选择股票如下：",Code)
-#%% 95 选择10组
+# 95 选择10组
 
 
 
@@ -455,3 +456,19 @@ np.savetxt('sortCode\\前_10.txt', cd20, fmt='%s')
 np.savetxt('sortCode\\后_10.txt', cd_20, fmt='%s')
 np.savetxt('sortCode\\中间_10.txt', cd_z_20, fmt='%s')
     
+
+
+#%% 单股测试
+
+start=0;
+end=1
+
+
+
+if api.connect('106.14.201.131', 7709):
+    print('连接成功')
+else:
+    raise ValueError('连接失败')
+    
+data = api.to_df(api.get_security_bars(9,0,'002161',start,end)) #
+            
