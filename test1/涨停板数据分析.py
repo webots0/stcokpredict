@@ -295,11 +295,24 @@ for code in code_df["code"]:
 
 #%% 当天模型测试
 
+import pandas as pd
+from pytdx.hq import TdxHq_API
+import matplotlib.pyplot as plt
+from pytdx.params import TDXParams
+import time
+import math
+
+api = TdxHq_API()  
+import numpy as np
+def normalize1(x):
+    return (x - x.min()) / (x.max() - x.min())
+def normalize2(x):
+    return (x - x.mean()) / x.std()
 
 start=0
 data_R0=[]
 
-
+code_df=np.load("code.npy",allow_pickle=True)
 
 if api.connect('106.14.201.131', 7709):
     print('连接成功')
@@ -311,7 +324,7 @@ close_df=[]
 code0=[]
 idx=0
 
-for code in code_df["code"]:
+for code in code_df:
     try:
         data = api.to_df(api.get_security_bars(9,0,code,start,end)) #
         
@@ -334,10 +347,11 @@ for code in code_df["code"]:
     
     if idx%100==0:
         print(idx,len(data_R0))
-        #break
+        break
     idx+=1
 
 #%% 保存选择的股票数据
+
 #%% 80选择
 def corrAB(A,B):
     A=A.apply(normalize2)
@@ -352,7 +366,6 @@ def corrAB(A,B):
     x34=x3/np.sqrt(x4)
     return x34
 cc=np.load("聚类中心_0.npy")
-code=code_df["code"]
 Code_0=[]
 Code=[]
 for c0 in range(len(cc)):
