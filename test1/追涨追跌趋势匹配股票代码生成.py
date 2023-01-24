@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Wed Jan 25 01:09:33 2023
+
+@author: webot
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Jan 24 15:35:18 2023
 
 @author: webot
@@ -29,7 +36,7 @@ api = TdxHq_API()
 import numpy as np
 
 
-start=66
+start=0
 #%% 追跌
 print('-------三跌一阳涨-------')
 
@@ -695,15 +702,15 @@ for i in newD0:
         if num-15>=0:
             idx+=1
             qus=qushi
-            qushi=norm(qushi)
-            c_0=close[0]
-            c_1=close[1]
-            r_c=(c_1-c_0)/c_0*100;
-            r_c=round(r_c,2)
-            print(f"股票{c0}相似距离是:{r0},第二天股票涨幅是:{r_c}%")
-            d2=api.to_df(api.get_security_bars(9,0,c0,num-15,40)) #
+            # qushi=norm(qushi)
+            # c_0=close[0]
+            # c_1=close[1]
+            # r_c=(c_1-c_0)/c_0*100;
+            # r_c=round(r_c,2)
+            #print(f"股票{c0}相似距离是:{r0},第二天股票涨幅是:{r_c}%")
+            d2=api.to_df(api.get_security_bars(9,0,c0,0,25)) #
             
-            plotK(d2)
+            plotK(d2,qus)
       
       
         #close=norm(qushi)
