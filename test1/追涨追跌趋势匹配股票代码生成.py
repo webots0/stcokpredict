@@ -35,7 +35,7 @@ today = datetime.datetime.now().date()
 api = TdxHq_API()  
 import numpy as np
 
-
+# 当天时间
 start=0
 #%% 追跌
 print('-------三跌一阳涨-------')
@@ -568,7 +568,7 @@ def getMinCode(selCd,r0):
     return minCode
 
 
-def plotK(pd):
+def plotK(pd,qushi):
     
     open = pd["open"]
     high = pd["high"]
@@ -577,22 +577,22 @@ def plotK(pd):
     
     date = np.linspace(1,len(low),len(low))
     # 绘制K线图
-    fig, ax = plt.subplots()
+   # fig, ax = plt.subplots()
+    fig, (ax, ax2) = plt.subplots(2, 1)
     ax.xaxis_date()
     plt.xlabel('Date')
     plt.ylabel('Price')
     plt.title('K Line')
-    t0=len(date)-15
+    
     for i in range(len(date)):
         if close[i] > open[i]:
             color = 'red'
         else:
             color = 'green'
-        if i==t0-2:
-            color='yellow'
+        
         ax.plot([date[i], date[i]], [low[i], high[i]], color=color)
         ax.plot([date[i] , date[i]], [open[i], close[i]], color=color, linewidth=10)
-    
+    ax2.plot(qushi)
     plt.show()
 
 #%%
@@ -681,14 +681,16 @@ newD0=np.concatenate(a)
 c00=norm(C0)
 #plt.plot(c00) 
 idx=0   
+
+outCode=[]
 for i in newD0:
-    num=int(i[3])-1
+    num=int(i[3])
     c0=str(i[0])
     r0=float(i[1])
     
     
     
-    d2=api.to_df(api.get_security_bars(9,0,c0,num,2)) #
+    d2=api.to_df(api.get_security_bars(9,0,c0,num,1)) #
     close=d2["close"]
     date=d2['datetime'][0]
     date_int=int(date[0:4]+date[5:7]+date[8:10])
@@ -699,19 +701,19 @@ for i in newD0:
     
     
     if r0<0.4:
-        if num-15>=0:
-            idx+=1
-            qus=qushi
-            # qushi=norm(qushi)
-            # c_0=close[0]
-            # c_1=close[1]
-            # r_c=(c_1-c_0)/c_0*100;
-            # r_c=round(r_c,2)
-            #print(f"股票{c0}相似距离是:{r0},第二天股票涨幅是:{r_c}%")
-            d2=api.to_df(api.get_security_bars(9,0,c0,0,25)) #
-            
-            plotK(d2,qus)
-      
+       
+        idx+=1
+        qus=qushi
+        # qushi=norm(qushi)
+        # c_0=close[0]
+        # c_1=close[1]
+        # r_c=(c_1-c_0)/c_0*100;
+        # r_c=round(r_c,2)
+        #print(f"股票{c0}相似距离是:{r0},第二天股票涨幅是:{r_c}%")
+        d2=api.to_df(api.get_security_bars(9,0,c0,0,25)) #
+        outCode.append(c0)
+        plotK(d2,qus)
+  
       
         #close=norm(qushi)
         # plt.plot(qushi,label=str(round(r0,3)))
@@ -726,16 +728,6 @@ for i in newD0:
     
 
     
-# #%%
-# import matplotlib.pyplot as plt
-# C00=norm(C0)
-# C1=C0+np.random.normal(0, 1, size=(240,))*0.1
-# C01=norm(C1)
-# plt.plot(C00)
-# plt.plot(C01)
-# dt=cor(C00,C01)
-# print(dt)
-
-
 #%%
-#plt.plot(Qushi)
+a=np.array(outCode)
+np.savetxt('sortCode\\追涨追跌趋势.txt',a, fmt='%s')
