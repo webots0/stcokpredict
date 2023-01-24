@@ -157,7 +157,7 @@ Code_1=np.array(Code)
 #%% 追跌，三连跌，两连涨
 
 
-print('三跌两阳涨')
+print('-----三跌两阳涨-----')
     
 
 def caculate_today0(start):
