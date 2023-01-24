@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 """
+Created on Tue Jan 24 15:35:18 2023
+
+@author: webot
+"""
+# 追涨生成股票
+
+# -*- coding: utf-8 -*-
+"""
 Created on Mon Jan 16 17:10:31 2023
 
 @author: webot
@@ -21,15 +29,15 @@ api = TdxHq_API()
 import numpy as np
 
 
-
+start=120
 
 #%% 追跌
 print('-------三跌一阳涨-------')
 
-def caculate_today():
+def caculate_today(start):
     all_flag=0
     true_flag=0    
-    start=0
+    #start=0
     end=10
     
     Code=[]
@@ -135,9 +143,8 @@ if api.connect('106.14.201.131', 7709):
 else:
     raise ValueError('连接失败')
         
-Code=caculate_today()  
-Code=np.array(Code)
-np.savetxt('sortCode\\三连跌一阳涨.txt',Code,fmt='%s')
+Code=caculate_today(start)  
+Code_1=np.array(Code)
 
 
 
@@ -263,13 +270,10 @@ if api.connect('106.14.201.131', 7709):
 else:
     raise ValueError('连接失败')
 
-Code=caculate_today0(0)
+Code=caculate_today0(start)
 
-Code=np.array(Code)
-np.savetxt('sortCode\\三连跌两阳涨.txt', Code, fmt='%s')
+Code_2=np.array(Code)
 
-
-#%%
 
 
 #%% 80选择,追涨
@@ -279,7 +283,6 @@ def normalize1(x):
 def normalize2(x):
     return (x - x.mean()) / x.std()
 
-start=0
 data_R0=[]
 
 code_df=np.load("code.npy",allow_pickle=True)
@@ -366,12 +369,367 @@ counter = collections.Counter(Code)
 # Sort the elements by their frequency
 sorted_list = sorted(counter.items(), key=lambda x: x[1], reverse=True)
 
-print(sorted_list)
 cd=np.array(sorted_list)
 cd20=cd[:20,0]
 cd_20=cd[-20:,0]
 id0=round(len(cd)/2)
 cd_z_20=cd[id0:id0+20,0]
-np.savetxt('sortCode\\追涨.txt', cd[:,0], fmt='%s')
+Code_3=cd[:,0]
 
 #%%
+
+
+
+
+
+
+
+
+
+#%%
+
+print('-----开始趋势匹配---------')
+from datetime import datetime
+
+import pandas as pd
+from pytdx.hq import TdxHq_API
+import matplotlib.pyplot as plt
+from pytdx.params import TDXParams
+import time
+import math
+from datetime import datetime
+import numpy as np
+api = TdxHq_API()  
+
+
+if api.connect('106.14.201.131', 7709):
+    print('连接成功')
+else:
+    raise ValueError('连接失败')
+
+
+
+# 将0，6，3开头的股票代码导入进来
+'''
+code_df=np.load("code.npy",allow_pickle=True)
+code=code_df
+code0=api.get_security_list(1, 0)
+num=api.get_security_count(0)
+x1 = np.array(api.to_df(api.get_security_list(0, 364))["code"])
+x2= np.array(api.to_df(api.get_security_list(0, 364+1000))["code"])[0:504]
+
+x12=np.concatenate((x1,x2))
+
+y1=np.array(api.to_df(api.get_security_list(1,18030))["code"])
+y2=np.array(api.to_df(api.get_security_list(1,18030+1000))["code"])
+y3=np.array(api.to_df(api.get_security_list(1,18030+2000))["code"])[0:172]
+
+y123=np.concatenate((y1,y2,y3))
+Y123=[]
+for y0 in y123:
+    Y123.append([1,y0])
+    
+
+z1=np.array(api.to_df(api.get_security_list(0,14739))["code"])
+x123=np.concatenate((x12,z1))
+X123=[]
+for x0 in x123:
+    X123.append([0,x0])
+    
+
+xy123=X123+Y123    
+
+xy_123=np.array(xy123)
+
+for ij in xy_123:
+    print(ij)
+    break
+np.save("allCode.npy",x12)
+'''
+#
+# 求出涨幅大于0.05的code
+code=np.concatenate((Code_1,Code_2,Code_3))
+
+def get002code(start):
+    api = TdxHq_API() 
+    if api.connect('106.14.201.131', 7709):
+        print('连接成功')
+    Code=[]
+    idx=0
+    for cd in code:
+        
+        cd0=str(cd)
+        try:
+            data = api.to_df(api.get_security_bars(9,0,cd0,start,2)) #
+            date=data['datetime'][1]
+            date_int=int(date[0:4]+date[5:7]+date[8:10])
+            close=data["close"]
+            open0=data["open"]
+            y=close[0]
+            t=open0[1]
+            ro=(t-y)/y
+            
+            if ro>=0.005:
+                
+                if close[1]>open0[1]:
+                    Code.append(cd0)
+        except:
+            pass
+        idx+=1
+        if idx%100==0:
+            print(idx)
+            
+    return (Code,date_int)
+        
+
+
+
+C0=np.loadtxt("dayPrice\\标准增长.csv")
+
+
+
+def norm(a):
+    a = (a-np.mean(a)) 
+   
+    a=a/np.linalg.norm(a)
+    return a
+def cor(a,b):
+    a = (a-np.mean(a)) 
+    b=b[0:len(a)]
+    b = (b-np.mean(b)) 
+    a=a/np.linalg.norm(a)
+    b=b/np.linalg.norm(b)
+
+    #计算平方欧式距离
+    distance = np.linalg.norm(a-b)**2
+    return distance
+
+def panduanTing(pa):
+    r=pa[-50:]
+    if sum(abs(r-r.mean()))>(r.mean()/200):
+        return True
+    else:
+        return False
+    
+def getQushiCode(Code,date_int):
+    
+    api = TdxHq_API() 
+    if api.connect('106.14.201.131', 7709):
+        print('连接成功')
+    Ds=[]
+    for c0 in Code:
+        try:
+            
+            da=api.to_df(api.get_history_minute_time_data(0,c0,date_int))
+            pa=np.array(da['price'])
+            flag=panduanTing(pa)
+            if flag:
+            
+                ds=cor(pa,C0)
+                
+                Ds.append([c0,ds])
+            #print(ds)
+            
+        except:
+            pass
+        #break
+    
+    
+    Dsp=np.array(Ds)    
+    ad=Dsp[:,1].astype(np.float)
+    idx0=~np.isnan(ad)
+    Dsp0=Dsp[idx0,:]
+    ad=Dsp0[:,1].astype(np.float)
+    sorted_indices = np.argsort(ad)
+    sorted_matrix = Dsp0[sorted_indices]
+    
+    selCd=sorted_matrix
+    return selCd
+
+
+
+    
+
+
+def getMinCode(selCd,r0):
+    
+    minCode=[]
+    for c0 in selCd:
+        r=c0[1]
+        if float(r)<r0:
+            minCode.append(str(c0[0]))
+            
+    return minCode
+
+
+def plotK(pd):
+    
+    open = pd["open"]
+    high = pd["high"]
+    low = pd["low"]
+    close = pd["close"]
+    
+    date = np.linspace(1,len(low),len(low))
+    # 绘制K线图
+    fig, ax = plt.subplots()
+    ax.xaxis_date()
+    plt.xlabel('Date')
+    plt.ylabel('Price')
+    plt.title('K Line')
+    t0=len(date)-15
+    for i in range(len(date)):
+        if close[i] > open[i]:
+            color = 'red'
+        else:
+            color = 'green'
+        if i==t0-2:
+            color='yellow'
+        ax.plot([date[i], date[i]], [low[i], high[i]], color=color)
+        ax.plot([date[i] , date[i]], [open[i], close[i]], color=color, linewidth=10)
+    
+    plt.show()
+
+#%%
+#Code,date_int=get002code(4)
+
+#%%
+#selCd=getQushiCode(Code,date_int)
+#minCode=getMinCode(selCd,0.1)
+
+
+
+#%%
+import threading
+import queue
+
+      
+def threadGet(i,cd_time):
+    try:
+   
+        Code,date_int=get002code(i)
+        selCd=getQushiCode(Code,date_int)
+        #minCode=getMinCode(selCd,0.1)
+        minCode=selCd
+        a=[minCode,date_int,i]
+        cd_time.put(a)
+    except:
+        pass
+    
+    
+    
+cd_time=queue.Queue()
+threads=[]
+
+selnum=[start]
+for i in selnum:
+    
+    t = threading.Thread(target=threadGet, args=(i, cd_time))
+    
+    threads.append(t)
+    t.start()
+
+for t in threads:
+    t.join()
+newD=[]
+while not cd_time.empty():
+    newD.append(cd_time.get())
+
+    
+    
+#%%
+a=()
+for i in newD:
+    i1=i[0]
+    i2=i[1]
+    i3=i[2]
+    i20=matrix = np.full((len(i1),), str(i2), dtype=np.dtype(object))
+    i30=matrix = np.full((len(i1),), str(i3), dtype=np.dtype(object))
+    i0 = np.column_stack((i1, i20,i30))
+    a=a+(i0,)
+newD0=np.concatenate(a)
+    
+
+    
+
+from datetime import timedelta,datetime
+import matplotlib.pyplot as plt
+api = TdxHq_API()  
+if api.connect('106.14.201.131', 7709):
+    print('连接成功')
+else:
+    raise ValueError('连接失败')
+
+a=()
+for i in newD:
+    i1=i[0]
+    i2=i[1]
+    i3=i[2]
+    i20=matrix = np.full((len(i1),), str(i2), dtype=np.dtype(object))
+    i30=matrix = np.full((len(i1),), str(i3), dtype=np.dtype(object))
+    i0 = np.column_stack((i1, i20,i30))
+    a=a+(i0,)
+newD0=np.concatenate(a)
+    
+
+
+c00=norm(C0)
+#plt.plot(c00) 
+idx=0   
+for i in newD0:
+    num=int(i[3])-1
+    c0=str(i[0])
+    r0=float(i[1])
+    
+    
+    
+    d2=api.to_df(api.get_security_bars(9,0,c0,num,2)) #
+    close=d2["close"]
+    date=d2['datetime'][0]
+    date_int=int(date[0:4]+date[5:7]+date[8:10])
+    
+    
+    d1=api.to_df(api.get_history_minute_time_data(0,c0,date_int))
+    qushi=np.array(d1["price"])
+    
+    
+    if r0<0.4:
+        if num-15>=0:
+            idx+=1
+            qus=qushi
+            qushi=norm(qushi)
+            c_0=close[0]
+            c_1=close[1]
+            r_c=(c_1-c_0)/c_0*100;
+            r_c=round(r_c,2)
+            print(f"股票{c0}相似距离是:{r0},第二天股票涨幅是:{r_c}%")
+            d2=api.to_df(api.get_security_bars(9,0,c0,num-15,40)) #
+            
+            plotK(d2)
+      
+      
+        #close=norm(qushi)
+        # plt.plot(qushi,label=str(round(r0,3)))
+        # plt.show()
+        
+        if idx==8:
+            Qushi=qus
+            #break
+            
+        #print(list(close),r0)
+    #break
+    
+
+    
+# #%%
+# import matplotlib.pyplot as plt
+# C00=norm(C0)
+# C1=C0+np.random.normal(0, 1, size=(240,))*0.1
+# C01=norm(C1)
+# plt.plot(C00)
+# plt.plot(C01)
+# dt=cor(C00,C01)
+# print(dt)
+
+
+#%%
+#plt.plot(Qushi)
