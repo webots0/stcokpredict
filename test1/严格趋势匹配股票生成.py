@@ -308,7 +308,7 @@ for i in newD0:
     
     
     
-    d2=api.to_df(api.get_security_bars(9,0,c0,num,2)) #
+    d2=api.to_df(api.get_security_bars(9,0,c0,num,1)) #
     close=d2["close"]
     date=d2['datetime'][0]
     date_int=int(date[0:4]+date[5:7]+date[8:10])
@@ -360,3 +360,5 @@ for i in newD0:
 
 #%%
 #plt.plot(Qushi)
+a=np.array(outCode)
+np.savetxt('sortCode\\严格趋势.txt',a, fmt='%s')
